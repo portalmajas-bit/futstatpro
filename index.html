@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FutsalStats Pro - Player Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f8fafc;
+        }
+
+        .sidebar-link.active {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+        }
+
+        .grade-badge {
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-weight: 800;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .grade-A {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .grade-B {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .grade-C {
+            background: #fef9c3;
+            color: #854d0e;
+        }
+
+        .grade-D {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .grade-E {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .tab-btn.active {
+            border-bottom: 2px solid #2563eb;
+            color: #2563eb;
+        }
+
+        .player-photo-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e2e8f0;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        #login-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: #f8fafc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gray-50">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-screen">
+        <div class="card p-8 w-full max-w-sm m-4">
+            <div class="text-center mb-6">
+                <div
+                    class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg">
+                    <i class="fas fa-futbol"></i>
+                </div>
+                <h1 class="text-2xl font-black text-gray-800">FUTSALPRO</h1>
+                <p class="text-sm text-gray-500 font-bold">Login Sistem Manajemen</p>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Username</label>
+                    <input type="text" id="login-username"
+                        class="w-full p-3 border rounded-xl font-bold bg-gray-50 focus:bg-white outline-none focus:border-blue-500 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Password</label>
+                    <input type="password" id="login-password"
+                        class="w-full p-3 border rounded-xl font-bold bg-gray-50 focus:bg-white outline-none focus:border-blue-500 transition"
+                        onkeypress="if(event.key === 'Enter') performLogin()">
+                </div>
+                <button onclick="performLogin()"
+                    class="w-full bg-blue-600 text-white py-3 rounded-xl font-black shadow-lg hover:bg-blue-700 transition mt-2">LOGIN</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- APP WRAPPER -->
+    <div id="app-wrapper" class="h-screen flex-col md:flex-row w-full overflow-hidden relative" style="display: none;">
+
+        <!-- MOBILE HEADER -->
+        <div
+            class="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center z-40 flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black shadow-md">
+                    <i class="fas fa-futbol"></i></div>
+                <h1 class="font-black text-gray-800 text-lg uppercase tracking-tight" id="mobile-header-title">FUTSALPRO
+                </h1>
+            </div>
+            <button onclick="toggleSidebar()" class="text-gray-500 hover:text-blue-600 text-2xl px-2">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- SIDEBAR OVERLAY (MOBILE) -->
+        <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden">
+        </div>
+
+        <!-- SIDEBAR -->
+        <nav id="sidebar"
+            class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-50 h-full flex-shrink-0">
+            <div class="p-6 flex items-center gap-3">
+                <img id="sidebar-logo" src="https://ui-avatars.com/api/?name=Futsal+Pro&background=2563eb&color=fff"
+                    class="w-12 h-12 rounded-xl object-cover" alt="Logo">
+                <div>
+                    <h1 id="sidebar-team-name" class="text-sm font-extrabold text-blue-600 truncate italic uppercase">
+                        FUTSALPRO</h1>
+                    <p id="sidebar-team-slogan" class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                        Elite Team</p>
+                </div>
+            </div>
+            <div class="flex flex-col gap-1 px-4">
+                <button onclick="showPage('dashboard')" id="nav-dashboard"
+                    class="sidebar-link active flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    <i class="fas fa-home w-5"></i> Dashboard
+                </button>
+                <button onclick="showPage('players')" id="nav-players"
+                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    <i class="fas fa-user-gear w-5"></i> Manajemen Pemain
+                </button>
+                <button onclick="showPage('stats')" id="nav-stats"
+                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    <i class="fas fa-chart-line w-5"></i> Statistik Pemain
+                </button>
+                <button onclick="showPage('matches')" id="nav-matches"
+                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    <i class="fas fa-calendar-check w-5"></i> Jadwal & Hasil
+                </button>
+                <button onclick="showPage('attendance')" id="nav-attendance"
+                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    <i class="fas fa-clipboard-list w-5"></i> Kehadiran Atlet
+                </button>
+                <button onclick="showPage('tests')" id="nav-tests"
+                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    <i class="fas fa-flask w-5"></i> Tes &amp; Pengukuran
+                </button>
+                <div class="mt-4 pt-4 border-t border-gray-100">
+                    <button onclick="showPage('users')" id="nav-users"
+                        class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                        <i class="fas fa-users w-5"></i> Manajemen Pengguna
+                    </button>
+                    <button onclick="showPage('settings')" id="nav-settings"
+                        class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                        <i class="fas fa-cog w-5"></i> Pengaturan Tim
+                    </button>
+                    <button onclick="syncToDatabase(event)"
+                        class="sidebar-link flex items-center gap-3 p-3 mt-2 rounded-xl text-blue-500 font-semibold hover:bg-blue-50 transition w-full text-left">
+                        <i class="fas fa-cloud-upload-alt w-5"></i> Simpan ke Cloud
+                    </button>
+                    <button onclick="loadFromDatabase(event)"
+                        class="sidebar-link flex items-center gap-3 p-3 mt-2 rounded-xl text-green-500 font-semibold hover:bg-green-50 transition w-full text-left">
+                        <i class="fas fa-cloud-download-alt w-5"></i> Muat dari Cloud
+                    </button>
+                    <button onclick="performLogout()"
+                        class="sidebar-link flex items-center gap-3 p-3 mt-2 rounded-xl text-red-500 font-semibold hover:bg-red-50 transition w-full text-left">
+                        <i class="fas fa-sign-out-alt w-5"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-6 md:p-8 overflow-y-auto max-h-screen">
+
+            <!-- DASHBOARD PAGE -->
+            <section id="page-dashboard" class="page-content space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Dashboard Utama</h2>
+                        <p class="text-sm text-gray-500">Ringkasan performa tim dan pemain terbaik.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="card p-4 border-l-4 border-l-blue-500 hover:shadow-md transition">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Pemain Terdaftar</p>
+                        <h3 id="stat-player-count" class="text-xl md:text-2xl font-bold text-gray-800">0</h3>
+                    </div>
+                    <div class="card p-4 border-l-4 border-l-teal-500 hover:shadow-md transition">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Rata-rata Usia</p>
+                        <h3 id="stat-avg-age" class="text-xl md:text-2xl font-bold text-teal-600">0</h3>
+                    </div>
+                    <div class="card p-4 border-l-4 border-l-indigo-500 hover:shadow-md transition">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Gol Tim</p>
+                        <h3 id="stat-total-goals" class="text-xl md:text-2xl font-bold text-indigo-600">0</h3>
+                    </div>
+                    <div class="card p-4 border-l-4 border-l-purple-500 hover:shadow-md transition">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Kebobolan</p>
+                        <h3 id="stat-total-conceded" class="text-xl md:text-2xl font-bold text-purple-600 truncate">0
+                        </h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div class="card p-4 border-l-4 border-l-green-500 hover:shadow-md transition bg-green-50/30">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Menang</p>
+                        <h3 id="stat-total-wins" class="text-xl md:text-2xl font-bold text-green-600">0</h3>
+                    </div>
+                    <div class="card p-4 border-l-4 border-l-yellow-500 hover:shadow-md transition bg-yellow-50/30">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Seri</p>
+                        <h3 id="stat-total-draws" class="text-xl md:text-2xl font-bold text-yellow-600">0</h3>
+                    </div>
+                    <div class="card p-4 border-l-4 border-l-red-500 hover:shadow-md transition bg-red-50/30">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Kalah</p>
+                        <h3 id="stat-total-losses" class="text-xl md:text-2xl font-bold text-red-600">0</h3>
+                    </div>
+                    <div class="card p-4 border-l-4 border-l-orange-500 hover:shadow-md transition">
+                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Win Rate</p>
+                        <h3 id="stat-win-rate" class="text-xl md:text-2xl font-bold text-orange-600">0%</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 card p-6">
+                        <h4 class="font-bold text-gray-700 mb-4">Tren Skor (10 Laga Terakhir)</h4>
+                        <div class="h-[300px] w-full relative">
+                            <canvas id="mainChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card flex flex-col h-[400px]">
+                        <div
+                            class="p-4 border-b font-bold text-gray-700 bg-gray-50/50 rounded-t-2xl flex items-center gap-2">
+                            <i class="fas fa-crown text-yellow-500"></i> Klasemen MVP
+                        </div>
+                        <div id="mvp-list" class="flex-1 divide-y overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="card flex flex-col h-[400px]">
+                        <div
+                            class="p-4 border-b font-bold text-gray-700 bg-gray-50/50 rounded-t-2xl flex items-center gap-2">
+                            <i class="fas fa-futbol text-blue-500"></i> Top Scorer
+                        </div>
+                        <div id="scorer-list" class="flex-1 divide-y overflow-y-auto"></div>
+                    </div>
+                    <div class="card flex flex-col h-[400px]">
+                        <div
+                            class="p-4 border-b font-bold text-gray-700 bg-gray-50/50 rounded-t-2xl flex items-center gap-2">
+                            <i class="fas fa-hands-helping text-green-500"></i> Top Assists
+                        </div>
+                        <div id="assist-list" class="flex-1 divide-y overflow-y-auto"></div>
+                    </div>
+                    <div class="card flex flex-col h-[400px]">
+                        <div
+                            class="p-4 border-b font-bold text-gray-700 bg-gray-50/50 rounded-t-2xl flex items-center gap-2">
+                            <i class="fas fa-shield-halved text-red-500"></i> Top Saves
+                        </div>
+                        <div id="save-list" class="flex-1 divide-y overflow-y-auto"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PLAYERS PAGE -->
+            <section id="page-players" class="page-content hidden space-y-6">
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Manajemen Pemain</h2>
+                        <p class="text-xs text-gray-500 mt-1">Kelola biodata, foto, dan atribut kemampuan fisik pemain.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="downloadCSVTemplate()"
+                            class="bg-white border border-gray-200 text-gray-700 px-3 py-2 rounded-xl text-xs font-bold hover:bg-gray-50 transition">
+                            <i class="fas fa-download mr-1 text-blue-500"></i> Template CSV
+                        </button>
+                        <label
+                            class="bg-green-100 text-green-700 border border-green-200 px-3 py-2 rounded-xl text-xs font-bold cursor-pointer hover:bg-green-200 transition">
+                            <i class="fas fa-file-import mr-1"></i> Impor CSV
+                            <input type="file" class="hidden" accept=".csv" onchange="importCSV(this)">
+                        </label>
+                        <button onclick="openPlayerModal()"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+                            <i class="fas fa-plus mr-1"></i> Tambah Pemain
+                        </button>
+                    </div>
+                </div>
+                <div class="card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[1000px]">
+                            <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b">
+                                <tr>
+                                    <th class="p-4">Biodata Pemain</th>
+                                    <th class="p-4">Usia</th>
+                                    <th class="p-4 text-center">Fisik (TB/BB)</th>
+                                    <th class="p-4 text-center">Grade Kemampuan</th>
+                                    <th class="p-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="player-list-body" class="divide-y text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- STATS PAGE -->
+            <section id="page-stats" class="page-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Statistik Performa</h2>
+                        <p class="text-xs text-gray-500">Data akumulasi performa pertandingan.</p>
+                    </div>
+                    <div class="text-xs font-bold text-blue-600 px-4 py-2 bg-blue-50 rounded-full">
+                        Total Pertandingan: <span id="stats-total-matches">0</span>
+                    </div>
+                </div>
+                <div class="card overflow-x-auto">
+                    <table class="w-full text-left min-w-[1400px]">
+                        <thead class="bg-blue-600 text-white text-[10px] font-bold uppercase">
+                            <tr>
+                                <th class="p-4 sticky left-0 bg-blue-600 z-10">Nama Pemain</th>
+                                <th class="p-4 text-center">Main</th>
+                                <th class="p-4 text-center bg-yellow-500/20 text-yellow-800"><i
+                                        class="fas fa-crown"></i> MVP</th>
+                                <th class="p-4 text-center">Gol</th>
+                                <th class="p-4 text-center">Asis</th>
+                                <th class="p-4 text-center">Save</th>
+                                <th class="p-4 text-center text-yellow-300">YC</th>
+                                <th class="p-4 text-center text-red-300">RC</th>
+                                <th class="p-4 text-center">W-D-L</th>
+                                <th class="p-4 text-center">Avg Rating</th>
+                                <th class="p-4 text-center bg-indigo-700/80"><i class="fas fa-dumbbell"></i> Fisik</th>
+                                <th class="p-4 text-center bg-violet-700/80"><i class="fas fa-shoe-prints"></i> Teknik
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="player-stats-body" class="divide-y text-sm font-semibold text-gray-700"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- MATCHES PAGE -->
+            <section id="page-matches" class="page-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Jadwal & Hasil</h2>
+                    <button onclick="openScheduleModal()"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-calendar-plus mr-2"></i> Jadwal Baru
+                    </button>
+                </div>
+                <div class="flex border-b border-gray-200">
+                    <button onclick="switchMatchTab('upcoming')" id="tab-upcoming"
+                        class="tab-btn active px-6 py-3 font-bold text-sm transition">Jadwal</button>
+                    <button onclick="switchMatchTab('completed')" id="tab-completed"
+                        class="tab-btn px-6 py-3 font-bold text-sm transition">Hasil</button>
+                </div>
+                <div id="matches-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            </section>
+
+            <!-- ATTENDANCE PAGE -->
+            <section id="page-attendance" class="page-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <h2 class="text-2xl font-bold text-gray-800">Kehadiran & Rekap</h2>
+                    <button onclick="openAttendanceModal()"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i> Tambah Sesi
+                    </button>
+                </div>
+                <div class="flex border-b border-gray-200">
+                    <button onclick="switchAttTab('sesi')" id="tab-att-sesi"
+                        class="tab-btn active px-6 py-3 font-bold text-sm transition">Daftar Sesi</button>
+                    <button onclick="switchAttTab('rekap')" id="tab-att-rekap"
+                        class="tab-btn px-6 py-3 font-bold text-sm transition">Rekap Kehadiran</button>
+                </div>
+                <div id="att-sesi-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div id="att-rekap-view" class="card overflow-x-auto hidden">
+                    <table class="w-full text-left min-w-[800px]">
+                        <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b">
+                            <tr>
+                                <th class="p-4">Pemain</th>
+                                <th class="p-4 text-center">Hadir</th>
+                                <th class="p-4 text-center">Izin</th>
+                                <th class="p-4 text-center">Sakit</th>
+                                <th class="p-4 text-center">Alpa</th>
+                                <th class="p-4 text-center">Persentase</th>
+                            </tr>
+                        </thead>
+                        <tbody id="att-rekap-body" class="divide-y text-sm"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TESTS PAGE -->
+            <section id="page-tests" class="page-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Tes &amp; Pengukuran</h2>
+                        <p class="text-xs text-gray-500 mt-1">Catat hasil tes fisik dan teknik. Grade pemain dikalkulasi
+                            otomatis.</p>
+                    </div>
+                    <button onclick="openTestModal()"
+                        class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
+                        <i class="fas fa-plus mr-2"></i> Tambah Sesi Tes
+                    </button>
+                </div>
+
+                <!-- Stats Summary Cards -->
+                <div id="test-summary-cards" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+
+                <div class="flex border-b border-gray-200">
+                    <button onclick="switchTestTab('list')" id="tab-test-list"
+                        class="tab-btn active px-6 py-3 font-bold text-sm transition">Daftar Sesi Tes</button>
+                    <button onclick="switchTestTab('rekap')" id="tab-test-rekap"
+                        class="tab-btn px-6 py-3 font-bold text-sm transition">Rekap Per Pemain</button>
+                </div>
+
+                <!-- Sesi List View -->
+                <div id="test-sesi-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+                <!-- Rekap View -->
+                <div id="test-rekap-view" class="card overflow-x-auto hidden">
+                    <table class="w-full text-left min-w-[900px]">
+                        <thead class="bg-indigo-600 text-white text-[10px] font-bold uppercase">
+                            <tr>
+                                <th class="p-4 sticky left-0 bg-indigo-600 z-10">Nama Pemain</th>
+                                <th class="p-4 text-center bg-indigo-700">Endurance</th>
+                                <th class="p-4 text-center bg-indigo-700">Strength</th>
+                                <th class="p-4 text-center bg-indigo-700">Agility</th>
+                                <th class="p-4 text-center bg-indigo-700">Speed</th>
+                                <th class="p-4 text-center bg-indigo-700">Power</th>
+                                <th class="p-4 text-center bg-violet-700">Dribbling</th>
+                                <th class="p-4 text-center bg-violet-700">Passing</th>
+                                <th class="p-4 text-center bg-violet-700">Shooting</th>
+                                <th class="p-4 text-center bg-violet-700">Ball Control</th>
+                                <th class="p-4 text-center">Avg Fisik</th>
+                                <th class="p-4 text-center">Avg Teknik</th>
+                                <th class="p-4 text-center">Grade</th>
+                            </tr>
+                        </thead>
+                        <tbody id="test-rekap-body" class="divide-y text-sm font-semibold text-gray-700"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- USERS PAGE -->
+            <section id="page-users" class="page-content hidden space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-800">Manajemen Pengguna</h2>
+                        <p class="text-sm text-gray-500">Kelola akses akun untuk sistem ini.</p>
+                    </div>
+                    <button onclick="openUserModal()"
+                        class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+                        <i class="fas fa-user-plus mr-1"></i> Tambah Pengguna
+                    </button>
+                </div>
+                <div class="card overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left min-w-[600px]">
+                            <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b">
+                                <tr>
+                                    <th class="p-4">Username</th>
+                                    <th class="p-4 text-center">Role</th>
+                                    <th class="p-4 text-right">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users-list-body" class="divide-y text-sm"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS PAGE -->
+            <section id="page-settings" class="page-content hidden space-y-6">
+                <div class="max-w-2xl mx-auto">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-6">Profil Tim</h2>
+                    <div class="card p-8 space-y-8">
+                        <div
+                            class="flex flex-col items-center justify-center p-6 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+                            <img id="setting-logo-preview" src=""
+                                class="w-32 h-32 rounded-2xl object-cover shadow-xl mb-4 bg-white border">
+                            <label
+                                class="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold uppercase hover:bg-blue-700">
+                                Ganti Logo
+                                <input type="file" class="hidden" accept="image/*" onchange="handleLogoUpload(this)">
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="md:col-span-2"><label class="text-xs font-bold text-gray-400 uppercase">Nama
+                                    Tim</label><input type="text" id="set-team-name"
+                                    class="w-full p-3 bg-gray-50 border rounded-xl font-bold mt-1 uppercase"></div>
+                            <div><label class="text-xs font-bold text-gray-400 uppercase">Slogan</label><input
+                                    type="text" id="set-team-slogan"
+                                    class="w-full p-3 bg-gray-50 border rounded-xl mt-1"></div>
+                            <div><label class="text-xs font-bold text-gray-400 uppercase">Tahun</label><input
+                                    type="number" id="set-team-est"
+                                    class="w-full p-3 bg-gray-50 border rounded-xl mt-1"></div>
+                        </div>
+                        <button onclick="saveTeamSettings()"
+                            class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black shadow-lg hover:bg-blue-700 transition">SIMPAN</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+    <!-- END APP WRAPPER -->
+
+    <!-- USER MODAL -->
+    <div id="user-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-bold text-gray-800" id="user-modal-title">Tambah Pengguna</h3>
+                <button onclick="closeUserModal()" class="text-gray-400 hover:text-red-500"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="space-y-4">
+                <input type="hidden" id="edit-username-ref">
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Username</label>
+                    <input type="text" id="u-username" class="w-full p-3 border rounded-xl outline-none font-bold">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1"
+                        id="u-password-label">Password</label>
+                    <input type="password" id="u-password" class="w-full p-3 border rounded-xl outline-none font-bold">
+                </div>
+                <button onclick="saveUser()"
+                    class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700 mt-2">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLAYER MODAL -->
+    <div id="player-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+                <h3 id="player-modal-title" class="text-lg font-bold text-gray-800">Data Pemain</h3>
+                <button onclick="closePlayerModal()" class="text-gray-400 hover:text-red-500"><i
+                        class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-6">
+                <input type="hidden" id="edit-player-id">
+
+                <div class="flex flex-col items-center gap-3 bg-blue-50/50 p-6 rounded-2xl border border-blue-100">
+                    <img id="p-photo-preview" src="https://ui-avatars.com/api/?name=P&background=2563eb&color=fff"
+                        class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg">
+                    <label
+                        class="bg-white text-blue-600 px-4 py-2 rounded-xl text-[10px] font-extrabold uppercase shadow-sm border border-blue-100 cursor-pointer hover:bg-blue-50 transition">
+                        Unggah Foto
+                        <input type="file" id="p-photo-input" class="hidden" accept="image/*"
+                            onchange="handlePlayerPhoto(this)">
+                    </label>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Nama Punggung (Nama
+                            PG)</label>
+                        <input type="text" id="p-nickname" placeholder="Cth: CR7"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold focus:border-blue-500 uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Nama
+                            Lengkap</label>
+                        <input type="text" id="p-name"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold focus:border-blue-500">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Tanggal
+                            Lahir</label>
+                        <input type="date" id="p-birthdate"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Tinggi (cm)</label>
+                        <input type="number" id="p-h"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Berat (kg)</label>
+                        <input type="number" id="p-w"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 focus:border-blue-500">
+                    </div>
+                </div>
+
+                <div class="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                    <div class="flex items-center gap-2 mb-3">
+                        <i class="fas fa-flask text-indigo-500 text-xs"></i>
+                        <h4 class="text-[10px] font-extrabold text-indigo-600 uppercase">Grade Kemampuan (Otomatis dari
+                            Tes)</h4>
+                    </div>
+                    <div id="player-auto-grade-panel" class="grid grid-cols-2 gap-2">
+                        <!-- Filled dynamically by JS -->
+                        <div
+                            class="bg-white p-3 border border-indigo-100 rounded-xl col-span-2 text-center text-xs text-gray-400 italic">
+                            Grade akan tampil otomatis setelah ada data tes pemain ini.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 bg-gray-50 border-t">
+                <button onclick="savePlayer()"
+                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition uppercase text-sm">Simpan
+                    Data Pemain</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCHEDULE MODAL -->
+    <div id="schedule-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">
+            <h3 class="font-bold text-gray-800 mb-4">Tambah Jadwal Laga</h3>
+            <div class="space-y-4">
+                <input type="text" id="sch-opp" placeholder="Nama Lawan"
+                    class="w-full p-3 border rounded-xl outline-none font-bold">
+                <input type="datetime-local" id="sch-date" class="w-full p-3 border rounded-xl outline-none">
+                <div class="flex gap-2">
+                    <button onclick="closeScheduleModal()"
+                        class="flex-1 py-3 text-gray-400 font-bold hover:text-red-500">Batal</button>
+                    <button onclick="saveSchedule()"
+                        class="flex-1 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700">Simpan
+                        Jadwal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ATTENDANCE MODAL -->
+    <div id="attendance-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-4xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <div class="p-6 bg-gray-50 border-b font-bold flex justify-between items-center text-gray-800">
+                <span id="att-modal-title">Sesi Kehadiran Baru</span>
+                <button onclick="closeAttendanceModal()"><i
+                        class="fas fa-times text-gray-300 hover:text-red-500"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <input type="hidden" id="att-id">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Tanggal</label>
+                        <input type="date" id="att-date"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Jenis Sesi</label>
+                        <select id="att-type"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                            <option value="Latihan">Latihan</option>
+                            <option value="Pertandingan">Pertandingan</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Keterangan /
+                            Judul</label>
+                        <input type="text" id="att-title" placeholder="Contoh: Latihan Taktik"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                    </div>
+                </div>
+                <div class="overflow-x-auto mt-4 border rounded-xl">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-100 text-[10px] uppercase font-bold text-gray-500 border-b">
+                            <tr>
+                                <th class="p-3">Nama Pemain</th>
+                                <th class="p-3 text-center w-24">Hadir</th>
+                                <th class="p-3 text-center w-24">Izin</th>
+                                <th class="p-3 text-center w-24">Sakit</th>
+                                <th class="p-3 text-center w-24">Alpa</th>
+                            </tr>
+                        </thead>
+                        <tbody id="att-players-list" class="divide-y"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button onclick="saveAttendance()"
+                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 uppercase tracking-wider">Simpan
+                    Kehadiran</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TESTS MODAL -->
+    <div id="test-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <div class="p-6 bg-indigo-600 font-bold flex justify-between items-center text-white">
+                <span id="test-modal-title" class="flex items-center gap-2"><i class="fas fa-flask"></i> Sesi Tes
+                    Baru</span>
+                <button onclick="closeTestModal()"><i
+                        class="fas fa-times text-indigo-200 hover:text-white"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <input type="hidden" id="test-id">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Tanggal Tes</label>
+                        <input type="date" id="test-date"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Jenis Tes</label>
+                        <select id="test-type"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold"
+                            onchange="renderTestPlayersTable()">
+                            <option value="Fisik">Fisik</option>
+                            <option value="Teknik">Teknik</option>
+                            <option value="Fisik &amp; Teknik">Fisik &amp; Teknik</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Judul /
+                            Keterangan</label>
+                        <input type="text" id="test-title" placeholder="Cth: Tes Awal Musim"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold">
+                    </div>
+                </div>
+                <div class="overflow-x-auto mt-2 border rounded-xl">
+                    <table class="w-full text-sm text-left" id="test-input-table">
+                        <thead id="test-input-thead"
+                            class="bg-gray-100 text-[10px] uppercase font-bold text-gray-500 border-b">
+                            <tr id="test-header-row"></tr>
+                        </thead>
+                        <tbody id="test-players-list" class="divide-y"></tbody>
+                    </table>
+                </div>
+                <p class="text-[10px] text-gray-400 italic">Masukkan nilai 0-100 untuk setiap parameter. Kosongkan jika
+                    pemain tidak mengikuti tes ini.</p>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button onclick="saveTest()"
+                    class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 uppercase tracking-wider">Simpan
+                    Hasil Tes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- RESULT MODAL -->
+    <div id="result-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
+            <div class="p-6 bg-gray-50 border-b font-bold flex justify-between items-center text-gray-800">
+                <span>Input Hasil Laga & Statistik Pemain</span>
+                <button onclick="closeResultModal()"><i
+                        class="fas fa-times text-gray-300 hover:text-red-500"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto space-y-4">
+                <input type="hidden" id="result-match-id">
+                <div class="flex justify-center items-center gap-8 bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold text-blue-500 uppercase mb-1">Skor Tim Kita</p>
+                        <div class="font-black text-4xl text-blue-600" id="result-score-us">0</div>
+                    </div>
+                    <div class="font-bold text-gray-300 text-xl">VS</div>
+                    <div class="text-center">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Skor Lawan</p>
+                        <input type="number" id="result-score-them" value="0"
+                            class="w-20 text-4xl font-black text-center bg-white rounded-xl border border-gray-200 focus:border-blue-500">
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="bg-gray-100 text-[10px] uppercase font-bold text-gray-500">
+                            <tr>
+                                <th class="p-2 text-left">Pemain</th>
+                                <th class="p-2">Rating</th>
+                                <th class="p-2">Gol</th>
+                                <th class="p-2">Asis</th>
+                                <th class="p-2">Save</th>
+                                <th class="p-2">YC</th>
+                                <th class="p-2">RC</th>
+                                <th class="p-2">Main?</th>
+                            </tr>
+                        </thead>
+                        <tbody id="result-players-list"></tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="p-6 border-t bg-gray-50">
+                <button onclick="finishMatchProcessing()"
+                    class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-blue-700 uppercase tracking-wider">Update
+                    Statistik Laga</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DATA STATE
+        let appUsers = JSON.parse(localStorage.getItem('futsal_users_v11')) || [{ username: 'admin', password: 'admin123' }];
+        let players = JSON.parse(localStorage.getItem('futsal_p_v11')) || [];
+        let matches = JSON.parse(localStorage.getItem('futsal_m_v11')) || [];
+        let attendances = JSON.parse(localStorage.getItem('futsal_att_v11')) || [];
+        let tests = JSON.parse(localStorage.getItem('futsal_tests_v11')) || [];
+        let teamSettings = JSON.parse(localStorage.getItem('futsal_team_v11')) || {
+            name: "FUTSALPRO", slogan: "ELITE PERFORMANCE TEAM",
+            logo: "https://ui-avatars.com/api/?name=Futsal+Pro&background=2563eb&color=fff", established: 2024
+        };
+
+        let currentMatchTab = 'upcoming';
+        let currentAttTab = 'sesi';
+        let currentAttSession = [];
+        let currentTestTab = 'list';
+        let currentTestSession = {}; // { pid: { endurance, strength, agility, speed, power, dribbling, passing, shooting, ballControl } }
+        let performanceChart = null;
+        let tempPlayerPhoto = null;
+        let tempLogoBase64 = teamSettings.logo;
+
+        window.onload = () => {
+            checkLoginStatus();
+            applyTeamSettings();
+            refreshAll();
+        };
+
+        function checkLoginStatus() {
+            const isLoggedIn = sessionStorage.getItem('logged_in_user');
+            if (isLoggedIn) {
+                document.getElementById('login-screen').classList.add('hidden');
+                document.getElementById('app-wrapper').style.display = 'flex';
+            } else {
+                document.getElementById('login-screen').classList.remove('hidden');
+                document.getElementById('app-wrapper').style.display = 'none';
+            }
+        }
+
+        function performLogin() {
+            const user = document.getElementById('login-username').value;
+            const pass = document.getElementById('login-password').value;
+            const found = appUsers.find(u => u.username === user && u.password === pass);
+            if (found) {
+                sessionStorage.setItem('logged_in_user', user);
+                document.getElementById('login-password').value = '';
+                checkLoginStatus();
+            } else {
+                alert("Username atau password salah!");
+            }
+        }
+
+        function performLogout() {
+            sessionStorage.removeItem('logged_in_user');
+            checkLoginStatus();
+            showPage('dashboard');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-content').forEach(p => p.classList.add('hidden'));
+            document.getElementById('page-' + pageId).classList.remove('hidden');
+
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            const navEl = document.getElementById('nav-' + pageId);
+            if (navEl) navEl.classList.add('active');
+
+            if (window.innerWidth < 768) {
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                document.getElementById('sidebar-overlay').classList.add('hidden');
+            }
+
+            if (pageId === 'dashboard') renderDashboard();
+            if (pageId === 'tests') { renderTests(); renderTestSummaryCards(); }
+        }
+
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxM0RAn2U03qjlpK_xZw5m9A1emvgEea4RFQWLOpTXkSijIOBe4090HhSjy121JdZDBlA/exec';
+
+        async function syncToDatabase(event) {
+            if (!confirm('Simpan semua data ke cloud?')) return;
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin w-5"></i> Menyimpan...';
+
+            try {
+                // Konversi data ke string JSON
+                const payload = JSON.stringify({
+                    action: 'saveData',
+                    data: { appUsers, players, matches, attendances, tests, teamSettings }
+                });
+
+                const response = await fetch(APPS_SCRIPT_URL, {
+                    method: 'POST',
+                    body: payload
+                });
+                const result = await response.json();
+                if (result.error) throw new Error(result.error);
+                alert('Berhasil disimpan ke Cloud!');
+            } catch (e) {
+                alert('Gagal menyimpan. Pastikan Apps Script menerima POST text/plain. Error: ' + e.message);
+                console.error(e);
+            } finally {
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        async function loadFromDatabase(event) {
+            if (!confirm('Muat data dari cloud? Data lokal akan tertimpa.')) return;
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin w-5"></i> Memuat...';
+
+            try {
+                const response = await fetch(APPS_SCRIPT_URL + '?action=loadData');
+                const result = await response.json();
+                if (result.error) throw new Error(result.error);
+
+                if (result.data) {
+                    if (result.data.appUsers) appUsers = result.data.appUsers;
+                    if (result.data.players) players = result.data.players;
+                    if (result.data.matches) matches = result.data.matches;
+                    if (result.data.attendances) attendances = result.data.attendances;
+                    if (result.data.tests) tests = result.data.tests;
+                    if (result.data.teamSettings) teamSettings = result.data.teamSettings;
+                    saveData();
+                    alert('Berhasil dimuat dari Cloud!');
+                } else {
+                    alert('Data tidak ditemukan di Cloud.');
+                }
+            } catch (e) {
+                alert('Gagal memuat. Pastikan URL benar dan merespon JSON. Error: ' + e.message);
+                console.error(e);
+            } finally {
+                btn.innerHTML = originalHTML;
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('futsal_users_v11', JSON.stringify(appUsers));
+            localStorage.setItem('futsal_p_v11', JSON.stringify(players));
+            localStorage.setItem('futsal_m_v11', JSON.stringify(matches));
+            localStorage.setItem('futsal_att_v11', JSON.stringify(attendances));
+            localStorage.setItem('futsal_tests_v11', JSON.stringify(tests));
+            localStorage.setItem('futsal_team_v11', JSON.stringify(teamSettings));
+            refreshAll();
+        }
+
+        function refreshAll() {
+            recalculatePlayerStats();
+            renderPlayers();
+            renderMatches();
+            renderAttendances();
+            renderTests();
+            renderDashboard();
+            renderPlayerStats();
+            renderUsers();
+        }
+
+        // USER MANAGEMENT
+        function renderUsers() {
+            const body = document.getElementById('users-list-body');
+            const currentUser = sessionStorage.getItem('logged_in_user');
+            body.innerHTML = appUsers.map(u => `
+                <tr class="border-b hover:bg-gray-50/50">
+                    <td class="p-4 font-bold text-gray-800">${u.username} ${u.username === currentUser ? '<span class="ml-2 text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded-lg uppercase">Aktif</span>' : ''}</td>
+                    <td class="p-4 text-center text-xs font-bold text-gray-500 uppercase">Admin</td>
+                    <td class="p-4 text-right">
+                        <button onclick="openUserModal('${u.username}')" class="text-blue-500 hover:text-blue-700 mx-2" title="Edit Password"><i class="fas fa-key"></i></button>
+                        ${appUsers.length > 1 && u.username !== currentUser ? `<button onclick="deleteUser('${u.username}')" class="text-red-400 hover:text-red-600" title="Hapus"><i class="fas fa-trash"></i></button>` : ''}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openUserModal(username = null) {
+            document.getElementById('user-modal').classList.remove('hidden');
+            document.getElementById('u-password').value = "";
+            if (username) {
+                document.getElementById('user-modal-title').innerText = "Edit Password Pengguna";
+                document.getElementById('edit-username-ref').value = username;
+                document.getElementById('u-username').value = username;
+                document.getElementById('u-username').readOnly = true;
+                document.getElementById('u-username').classList.add('bg-gray-100');
+                document.getElementById('u-password-label').innerText = "Password Baru";
+            } else {
+                document.getElementById('user-modal-title').innerText = "Tambah Pengguna Baru";
+                document.getElementById('edit-username-ref').value = "";
+                document.getElementById('u-username').value = "";
+                document.getElementById('u-username').readOnly = false;
+                document.getElementById('u-username').classList.remove('bg-gray-100');
+                document.getElementById('u-password-label').innerText = "Password";
+            }
+        }
+
+        function closeUserModal() { document.getElementById('user-modal').classList.add('hidden'); }
+
+        function saveUser() {
+            const ref = document.getElementById('edit-username-ref').value;
+            const username = document.getElementById('u-username').value.trim();
+            const password = document.getElementById('u-password').value;
+
+            if (!username || !password) return alert("Username dan Password wajib diisi!");
+
+            if (ref) {
+                const idx = appUsers.findIndex(u => u.username === ref);
+                if (idx > -1) appUsers[idx].password = password;
+            } else {
+                if (appUsers.some(u => u.username === username)) return alert("Username sudah digunakan!");
+                appUsers.push({ username, password });
+            }
+
+            saveData();
+            closeUserModal();
+            alert("Data pengguna berhasil disimpan!");
+        }
+
+        function deleteUser(username) {
+            if (appUsers.length <= 1) return alert("Tidak bisa menghapus satu-satunya pengguna!");
+            if (confirm("Hapus pengguna " + username + "?")) {
+                appUsers = appUsers.filter(u => u.username !== username);
+                saveData();
+            }
+        }
+
+        // TEAM SETTINGS
+        function applyTeamSettings() {
+            document.getElementById('sidebar-team-name').innerText = teamSettings.name;
+            if (document.getElementById('mobile-header-title')) document.getElementById('mobile-header-title').innerText = teamSettings.name;
+            document.getElementById('sidebar-team-slogan').innerText = teamSettings.slogan;
+            document.getElementById('sidebar-logo').src = teamSettings.logo;
+            document.getElementById('setting-logo-preview').src = teamSettings.logo;
+            document.getElementById('set-team-name').value = teamSettings.name;
+            document.getElementById('set-team-slogan').value = teamSettings.slogan;
+            document.getElementById('set-team-est').value = teamSettings.established;
+            tempLogoBase64 = teamSettings.logo;
+        }
+
+        function handleLogoUpload(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    tempLogoBase64 = e.target.result;
+                    document.getElementById('setting-logo-preview').src = tempLogoBase64;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveTeamSettings() {
+            teamSettings.name = document.getElementById('set-team-name').value.toUpperCase();
+            teamSettings.slogan = document.getElementById('set-team-slogan').value;
+            teamSettings.established = document.getElementById('set-team-est').value;
+            teamSettings.logo = tempLogoBase64;
+            saveData();
+            applyTeamSettings();
+            alert("Pengaturan tim disimpan!");
+        }
+
+        // PLAYER MANAGEMENT
+        function openPlayerModal(playerId = null) {
+            tempPlayerPhoto = null;
+            document.getElementById('player-modal').classList.remove('hidden');
+            const panel = document.getElementById('player-auto-grade-panel');
+            if (playerId) {
+                const p = players.find(x => x.id === playerId);
+                document.getElementById('player-modal-title').innerText = "Edit Data Pemain";
+                document.getElementById('edit-player-id').value = p.id;
+                document.getElementById('p-nickname').value = p.nickname;
+                document.getElementById('p-name').value = p.name;
+                document.getElementById('p-birthdate').value = p.birthdate;
+                document.getElementById('p-h').value = p.h;
+                document.getElementById('p-w').value = p.w;
+                document.getElementById('p-photo-preview').src = p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`;
+                // Show auto grades
+                const avgs = getPlayerTestAvg(p.id);
+                if (avgs.hasData) {
+                    const params = [
+                        { key: 'endurance', label: 'Endurance' }, { key: 'strength', label: 'Strength' }, { key: 'agility', label: 'Agility' },
+                        { key: 'speed', label: 'Speed' }, { key: 'power', label: 'Power' }, { key: 'dribbling', label: 'Dribbling' },
+                        { key: 'passing', label: 'Passing' }, { key: 'shooting', label: 'Shooting' }, { key: 'ballControl', label: 'Ball Control' }
+                    ];
+                    panel.innerHTML = params.filter(pp => avgs[pp.key] !== null).map(pp => {
+                        const score = avgs[pp.key]; const grade = scoreToGrade(score);
+                        return `<div class="bg-white p-2 border border-indigo-100 rounded-xl flex justify-between items-center">
+                            <span class="text-[9px] font-bold text-gray-500 uppercase">${pp.label}</span>
+                            <div class="flex items-center gap-1">
+                                <span class="text-[9px] text-gray-400">${score.toFixed(0)}</span>
+                                <span class="grade-badge grade-${grade}">${grade}</span>
+                            </div></div>`;
+                    }).join('');
+                } else {
+                    panel.innerHTML = '<div class="bg-white p-3 border border-indigo-100 rounded-xl col-span-2 text-center text-xs text-gray-400 italic">Grade akan tampil otomatis setelah ada data tes pemain ini.</div>';
+                }
+            } else {
+                document.getElementById('player-modal-title').innerText = "Tambah Pemain Baru";
+                document.getElementById('edit-player-id').value = "";
+                document.getElementById('p-nickname').value = "";
+                document.getElementById('p-name').value = "";
+                document.getElementById('p-birthdate').value = "";
+                document.getElementById('p-h').value = "";
+                document.getElementById('p-w').value = "";
+                document.getElementById('p-photo-preview').src = "https://ui-avatars.com/api/?name=P&background=2563eb&color=fff";
+                panel.innerHTML = '<div class="bg-white p-3 border border-indigo-100 rounded-xl col-span-2 text-center text-xs text-gray-400 italic">Grade akan tampil otomatis setelah ada data tes pemain ini.</div>';
+            }
+        }
+
+        function closePlayerModal() { document.getElementById('player-modal').classList.add('hidden'); }
+
+        function handlePlayerPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    tempPlayerPhoto = e.target.result;
+                    document.getElementById('p-photo-preview').src = tempPlayerPhoto;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function savePlayer() {
+            const id = document.getElementById('edit-player-id').value;
+            const nickname = document.getElementById('p-nickname').value.toUpperCase();
+            if (!nickname) return alert("Nama Punggung wajib diisi!");
+
+            const playerData = {
+                id: id ? parseInt(id) : Date.now(),
+                nickname,
+                name: document.getElementById('p-name').value,
+                birthdate: document.getElementById('p-birthdate').value,
+                h: document.getElementById('p-h').value,
+                w: document.getElementById('p-w').value,
+                photo: tempPlayerPhoto || (id ? players.find(x => x.id == id).photo : null),
+                physique: id ? (players.find(x => x.id == id).physique || {}) : {},
+                stats: id ? players.find(x => x.id == id).stats : { goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0, mvpCount: 0, avgRating: "0.0" }
+            };
+
+            if (id) {
+                const idx = players.findIndex(x => x.id == id);
+                players[idx] = playerData;
+            } else {
+                players.push(playerData);
+            }
+            saveData();
+            closePlayerModal();
+        }
+
+        function deletePlayer(id) {
+            if (confirm("Hapus pemain ini? Seluruh statistik akan terpengaruh.")) {
+                players = players.filter(x => x.id !== id);
+                saveData();
+            }
+        }
+
+        // CSV FEATURES
+        function downloadCSVTemplate() {
+            const csvContent = "Nama Punggung,Nama Lengkap,Tgl Lahir(YYYY-MM-DD),Tinggi(cm),Berat(kg),Endurance(A/B/C/D/E),Strength,Agility,Speed,Power\nRONALDO,Cristiano Ronaldo,1985-02-05,187,83,A,A,B,A,A";
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "template_pemain.csv";
+            link.click();
+        }
+
+        function importCSV(input) {
+            if (!input.files || !input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                const lines = e.target.result.split('\n');
+                let count = 0;
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = lines[i].split(',');
+                    if (cols.length >= 10 && cols[0].trim() !== "") {
+                        players.push({
+                            id: Date.now() + i,
+                            nickname: cols[0].trim().toUpperCase(),
+                            name: (cols[1] || '').trim(),
+                            birthdate: (cols[2] || '').trim(),
+                            h: (cols[3] || '').trim(),
+                            w: (cols[4] || '').trim(),
+                            photo: null,
+                            physique: {
+                                endurance: (cols[5] || 'C').trim().toUpperCase(),
+                                strength: (cols[6] || 'C').trim().toUpperCase(),
+                                agility: (cols[7] || 'C').trim().toUpperCase(),
+                                speed: (cols[8] || 'C').trim().toUpperCase(),
+                                power: (cols[9] || 'C').trim().toUpperCase()
+                            },
+                            stats: { goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0, mvpCount: 0, avgRating: "0.0" }
+                        });
+                        count++;
+                    }
+                }
+                saveData();
+                alert(`Berhasil mengimpor ${count} pemain!`);
+                input.value = "";
+            };
+            reader.readAsText(input.files[0]);
+        }
+
+        // STATS LOGIC
+        function recalculatePlayerStats() {
+            players.forEach(p => p.stats = { goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, avgRating: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0, mvpCount: 0 });
+            const completed = matches.filter(m => m.status === 'completed');
+
+            completed.forEach(m => {
+                const result = m.scoreUs > m.scoreThem ? 'W' : (m.scoreUs === m.scoreThem ? 'D' : 'L');
+
+                // Find MVP for this match (highest rating)
+                let maxRating = 0;
+                m.participation.forEach(part => {
+                    if (part.isPlaying && parseFloat(part.rating) > maxRating) maxRating = parseFloat(part.rating);
+                });
+
+                m.participation.forEach(part => {
+                    const p = players.find(x => x.id === part.pid);
+                    if (p && part.isPlaying) {
+                        p.stats.goals += (parseInt(part.goals) || 0);
+                        p.stats.assists += (parseInt(part.assists) || 0);
+                        p.stats.saves += (parseInt(part.saves) || 0);
+                        p.stats.yellowCards += (parseInt(part.yellowCards) || 0);
+                        p.stats.redCards += (parseInt(part.redCards) || 0);
+                        p.stats.matchesPlayed += 1;
+                        p.stats.avgRating += (parseFloat(part.rating) || 0);
+                        if (parseFloat(part.rating) === maxRating && maxRating > 0) p.stats.mvpCount += 1;
+                        if (result === 'W') p.stats.wins += 1;
+                        else if (result === 'D') p.stats.draws += 1;
+                        else p.stats.losses += 1;
+                    }
+                });
+            });
+
+            players.forEach(p => {
+                if (p.stats.matchesPlayed > 0) p.stats.avgRating = (p.stats.avgRating / p.stats.matchesPlayed).toFixed(1);
+                else p.stats.avgRating = "0.0";
+            });
+        }
+
+        // RENDERING
+        function renderPlayers() {
+            const body = document.getElementById('player-list-body');
+            body.innerHTML = players.map(p => {
+                const age = calculateAge(p.birthdate);
+                const avgs = getPlayerTestAvg(p.id);
+                let gradeBadges = '';
+                if (avgs.hasData) {
+                    const physParams = ['endurance', 'strength', 'agility', 'speed', 'power'];
+                    const techParams = ['dribbling', 'passing', 'shooting', 'ballControl'];
+                    const physGrades = physParams.filter(k => avgs[k] !== null).map(k => scoreToGrade(avgs[k]));
+                    const techGrades = techParams.filter(k => avgs[k] !== null).map(k => scoreToGrade(avgs[k]));
+                    [...physGrades, ...techGrades].forEach(g => { gradeBadges += `<span class="grade-badge grade-${g}">${g}</span>`; });
+                } else if (p.physique && Object.keys(p.physique).length > 0) {
+                    Object.values(p.physique).forEach(g => { gradeBadges += `<span class="grade-badge grade-${g}">${g}</span>`; });
+                } else {
+                    gradeBadges = '<span class="text-[10px] text-gray-400 italic">Belum ada tes</span>';
+                }
+                return `
+                <tr class="border-b hover:bg-gray-50/50">
+                    <td class="p-4">
+                        <div class="flex items-center gap-3">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="player-photo-circle">
+                            <div>
+                                <p class="font-bold text-gray-800 uppercase">${p.nickname}</p>
+                                <p class="text-[10px] text-gray-400 font-semibold">${p.name || '-'}</p>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="p-4 font-bold text-gray-600">${age} thn</td>
+                    <td class="p-4 text-center text-xs font-bold text-gray-500">${p.h || '-'}cm / ${p.w || '-'}kg</td>
+                    <td class="p-4">
+                        <div class="flex flex-wrap justify-center gap-1">${gradeBadges}</div>
+                    </td>
+                    <td class="p-4 text-right">
+                        <button onclick="openPlayerModal(${p.id})" class="text-blue-500 hover:text-blue-700 mx-2"><i class="fas fa-edit"></i></button>
+                        <button onclick="deletePlayer(${p.id})" class="text-red-400 hover:text-red-600"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function renderPlayerStats() {
+            document.getElementById('stats-total-matches').innerText = matches.filter(m => m.status === 'completed').length;
+            const body = document.getElementById('player-stats-body');
+            body.innerHTML = [...players]
+                .sort((a, b) => b.stats.avgRating - a.stats.avgRating)
+                .map(p => {
+                    const avgs = getPlayerTestAvg(p.id);
+                    const fysAvg = avgs.avgFisik !== null ? `<span class="px-2 py-1 rounded-lg bg-indigo-600 text-white text-xs font-bold">${avgs.avgFisik.toFixed(0)}</span>` : '<span class="text-gray-300 text-xs">-</span>';
+                    const tekAvg = avgs.avgTeknik !== null ? `<span class="px-2 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold">${avgs.avgTeknik.toFixed(0)}</span>` : '<span class="text-gray-300 text-xs">-</span>';
+                    return `
+                <tr class="border-b hover:bg-blue-50/30">
+                    <td class="p-4 sticky left-0 bg-white z-10">
+                        <div class="flex items-center gap-2 min-w-[120px]">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-8 h-8 rounded-full object-cover shadow-sm border border-gray-100">
+                            <span class="font-bold text-blue-600 text-xs uppercase truncate">${p.nickname}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center">${p.stats.matchesPlayed}</td>
+                    <td class="p-4 text-center font-black text-yellow-600 bg-yellow-50">${p.stats.mvpCount}</td>
+                    <td class="p-4 text-center font-bold">${p.stats.goals}</td>
+                    <td class="p-4 text-center font-bold">${p.stats.assists}</td>
+                    <td class="p-4 text-center font-bold">${p.stats.saves}</td>
+                    <td class="p-4 text-center text-yellow-600">${p.stats.yellowCards}</td>
+                    <td class="p-4 text-center text-red-600">${p.stats.redCards}</td>
+                    <td class="p-4 text-center text-xs">${p.stats.wins}-${p.stats.draws}-${p.stats.losses}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2 py-1 rounded-lg bg-blue-600 text-white text-xs font-bold">${p.stats.avgRating}</span>
+                    </td>
+                    <td class="p-4 text-center bg-indigo-50/30">${fysAvg}</td>
+                    <td class="p-4 text-center bg-violet-50/30">${tekAvg}</td>
+                </tr>`;
+                }).join('');
+        }
+
+        function renderDashboard() {
+            document.getElementById('stat-player-count').innerText = players.length;
+
+            const ages = players.map(p => parseInt(calculateAge(p.birthdate))).filter(a => !isNaN(a));
+            const avgAge = ages.length ? (ages.reduce((a, b) => a + b, 0) / ages.length).toFixed(1) : 0;
+            document.getElementById('stat-avg-age').innerText = avgAge;
+
+            const completed = matches.filter(m => m.status === 'completed');
+            const totalGoals = completed.reduce((sum, m) => sum + m.scoreUs, 0);
+            const totalConceded = completed.reduce((sum, m) => sum + m.scoreThem, 0);
+            document.getElementById('stat-total-goals').innerText = totalGoals;
+            document.getElementById('stat-total-conceded').innerText = totalConceded;
+
+            const wins = completed.filter(m => m.scoreUs > m.scoreThem).length;
+            const draws = completed.filter(m => m.scoreUs === m.scoreThem).length;
+            const losses = completed.filter(m => m.scoreUs < m.scoreThem).length;
+            const winRate = completed.length ? Math.round((wins / completed.length) * 100) : 0;
+
+            document.getElementById('stat-total-wins').innerText = wins;
+            document.getElementById('stat-total-draws').innerText = draws;
+            document.getElementById('stat-total-losses').innerText = losses;
+            document.getElementById('stat-win-rate').innerText = winRate + "%";
+
+            // Leaderboards
+            const renderLeader = (elId, sortKey) => {
+                const list = [...players].sort((a, b) => b.stats[sortKey] - a.stats[sortKey]).slice(0, 5);
+                document.getElementById(elId).innerHTML = list.map((p, idx) => `
+                    <div class="flex items-center gap-3 p-3">
+                        <span class="text-xs font-black text-gray-300 w-4">${idx + 1}</span>
+                        <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-8 h-8 rounded-full">
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-gray-800 uppercase">${p.nickname}</p>
+                        </div>
+                        <span class="text-sm font-black text-blue-600">${p.stats[sortKey]}</span>
+                    </div>
+                `).join('');
+            };
+
+            renderLeader('mvp-list', 'mvpCount');
+            renderLeader('scorer-list', 'goals');
+            renderLeader('assist-list', 'assists');
+            renderLeader('save-list', 'saves');
+
+            renderChart(completed.slice(-10));
+        }
+
+        function renderChart(lastMatches) {
+            const ctx = document.getElementById('mainChart').getContext('2d');
+            if (performanceChart) performanceChart.destroy();
+
+            performanceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: lastMatches.map((_, i) => `Laga ${i + 1}`),
+                    datasets: [
+                        { label: 'Gol Kita', data: lastMatches.map(m => m.scoreUs), borderColor: '#2563eb', tension: 0.4, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.1)' },
+                        { label: 'Gol Lawan', data: lastMatches.map(m => m.scoreThem), borderColor: '#ef4444', tension: 0.4, borderDash: [5, 5] }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        // MATCH LOGIC
+        function openScheduleModal() { document.getElementById('schedule-modal').classList.remove('hidden'); }
+        function closeScheduleModal() { document.getElementById('schedule-modal').classList.add('hidden'); }
+
+        function saveSchedule() {
+            const opponent = document.getElementById('sch-opp').value;
+            const date = document.getElementById('sch-date').value;
+            if (!opponent || !date) return alert("Isi semua data jadwal!");
+
+            matches.push({
+                id: Date.now(),
+                opponent: opponent.toUpperCase(),
+                date,
+                status: 'upcoming',
+                scoreUs: 0,
+                scoreThem: 0,
+                participation: players.map(p => ({ pid: p.id, goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, rating: 5, isPlaying: false }))
+            });
+            saveData();
+            closeScheduleModal();
+        }
+
+        function switchMatchTab(tab) {
+            currentMatchTab = tab;
+            document.getElementById('tab-upcoming').classList.toggle('active', tab === 'upcoming');
+            document.getElementById('tab-completed').classList.toggle('active', tab === 'completed');
+            renderMatches();
+        }
+
+        function renderMatches() {
+            const filtered = matches.filter(m => m.status === currentMatchTab);
+            const grid = document.getElementById('matches-grid');
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-12 text-center text-gray-400 font-bold uppercase tracking-widest">Tidak ada data</div>`;
+                return;
+            }
+
+            grid.innerHTML = filtered.map(m => `
+                <div class="card p-5 space-y-4">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-black px-2 py-1 rounded bg-gray-100 text-gray-500 uppercase">${new Date(m.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        ${m.status === 'completed' ? `
+                            <span class="text-[10px] font-black px-2 py-1 rounded ${m.scoreUs > m.scoreThem ? 'bg-green-100 text-green-600' : (m.scoreUs === m.scoreThem ? 'bg-yellow-100 text-yellow-600' : 'bg-red-100 text-red-600')} uppercase">
+                                ${m.scoreUs > m.scoreThem ? 'WIN' : (m.scoreUs === m.scoreThem ? 'DRAW' : 'LOSS')}
+                            </span>
+                        ` : '<span class="text-[10px] font-black px-2 py-1 rounded bg-blue-100 text-blue-600 uppercase">UPCOMING</span>'}
+                    </div>
+                    <div class="flex items-center justify-between text-center gap-4 py-2">
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-blue-600 truncate">${teamSettings.name}</p>
+                        </div>
+                        <div class="flex flex-col items-center">
+                            <p class="text-2xl font-black text-gray-800">${m.status === 'completed' ? `${m.scoreUs} - ${m.scoreThem}` : 'VS'}</p>
+                            <p class="text-[10px] font-bold text-gray-400 mt-1">${new Date(m.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-xs font-bold text-red-600 truncate">${m.opponent}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        ${m.status === 'upcoming' ? `
+                            <button onclick="openResultModal(${m.id})" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-blue-700">INPUT HASIL</button>
+                        ` : `
+                            <button onclick="openResultModal(${m.id})" class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-lg text-xs font-bold hover:bg-gray-200">DETAIL STATS</button>
+                        `}
+                        <button onclick="deleteMatch(${m.id})" class="w-10 bg-red-50 text-red-400 py-2 rounded-lg text-xs hover:bg-red-100"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function deleteMatch(id) {
+            if (confirm("Hapus pertandingan ini? Statistik pemain akan otomatis diupdate.")) {
+                matches = matches.filter(m => m.id !== id);
+                saveData();
+            }
+        }
+
+        // ATTENDANCE LOGIC
+        function switchAttTab(tab) {
+            currentAttTab = tab;
+            document.getElementById('tab-att-sesi').classList.toggle('active', tab === 'sesi');
+            document.getElementById('tab-att-rekap').classList.toggle('active', tab === 'rekap');
+
+            if (tab === 'sesi') {
+                document.getElementById('att-sesi-view').classList.remove('hidden');
+                document.getElementById('att-rekap-view').classList.add('hidden');
+                renderAttendances();
+            } else {
+                document.getElementById('att-sesi-view').classList.add('hidden');
+                document.getElementById('att-rekap-view').classList.remove('hidden');
+                renderAttendanceRecap();
+            }
+        }
+
+        function renderAttendances() {
+            const grid = document.getElementById('att-sesi-view');
+            if (attendances.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-12 text-center text-gray-400 font-bold uppercase tracking-widest">Belum ada sesi kehadiran</div>`;
+                return;
+            }
+            grid.innerHTML = [...attendances].sort((a, b) => new Date(b.date) - new Date(a.date)).map(att => `
+                <div class="card p-5 space-y-4">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-black px-2 py-1 rounded bg-gray-100 text-gray-500 uppercase">${new Date(att.date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span class="text-[10px] font-black px-2 py-1 rounded ${att.type === 'Latihan' ? 'bg-green-100 text-green-600' : 'bg-blue-100 text-blue-600'} uppercase">${att.type}</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 text-lg truncate">${att.title || 'Sesi Tanpa Judul'}</h4>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">${att.records.length} Pemain Tercatat</p>
+                    </div>
+                    <div class="flex gap-2 pt-2 border-t border-gray-100">
+                        <button onclick="openAttendanceModal(${att.id})" class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-bold hover:bg-gray-100">EDIT ABSENSI</button>
+                        <button onclick="deleteAttendance(${att.id})" class="w-10 bg-red-50 text-red-400 py-2 rounded-lg text-xs hover:bg-red-100"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderAttendanceRecap() {
+            const body = document.getElementById('att-rekap-body');
+            body.innerHTML = players.map(p => {
+                let hadir = 0, izin = 0, sakit = 0, alpa = 0;
+                attendances.forEach(att => {
+                    const rec = att.records.find(r => r.pid === p.id);
+                    if (rec) {
+                        if (rec.status === 'Hadir') hadir++;
+                        else if (rec.status === 'Izin') izin++;
+                        else if (rec.status === 'Sakit') sakit++;
+                        else if (rec.status === 'Alpa') alpa++;
+                    }
+                });
+                const total = hadir + izin + sakit + alpa;
+                const percent = total > 0 ? Math.round((hadir / total) * 100) : 0;
+
+                return `
+                <tr class="border-b hover:bg-gray-50/50">
+                    <td class="p-4 sticky left-0 bg-white z-10">
+                        <div class="flex items-center gap-2 min-w-[120px]">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-8 h-8 rounded-full object-cover shadow-sm border border-gray-100">
+                            <span class="font-bold text-gray-800 uppercase text-xs truncate">${p.nickname}</span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-center font-bold text-green-600 bg-green-50/30">${hadir}</td>
+                    <td class="p-4 text-center font-bold text-yellow-600">${izin}</td>
+                    <td class="p-4 text-center font-bold text-orange-600">${sakit}</td>
+                    <td class="p-4 text-center font-bold text-red-600">${alpa}</td>
+                    <td class="p-4 text-center">
+                        <span class="px-2 py-1 rounded-lg ${percent >= 75 ? 'bg-green-600' : (percent >= 50 ? 'bg-yellow-500' : 'bg-red-500')} text-white text-[10px] font-black">${percent}%</span>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function openAttendanceModal(attId = null) {
+            document.getElementById('attendance-modal').classList.remove('hidden');
+            if (attId) {
+                const att = attendances.find(x => x.id === attId);
+                document.getElementById('att-modal-title').innerText = "Edit Sesi Kehadiran";
+                document.getElementById('att-id').value = att.id;
+                document.getElementById('att-date').value = att.date;
+                document.getElementById('att-type').value = att.type;
+                document.getElementById('att-title').value = att.title;
+                currentAttSession = players.map(p => {
+                    const existing = att.records.find(r => r.pid === p.id);
+                    return { pid: p.id, status: existing ? existing.status : 'Hadir' };
+                });
+            } else {
+                document.getElementById('att-modal-title').innerText = "Sesi Kehadiran Baru";
+                document.getElementById('att-id').value = "";
+                document.getElementById('att-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('att-type').value = "Latihan";
+                document.getElementById('att-title').value = "";
+                currentAttSession = players.map(p => ({ pid: p.id, status: 'Hadir' }));
+            }
+            renderAttendancePlayers();
+        }
+
+        function renderAttendancePlayers() {
+            const listEl = document.getElementById('att-players-list');
+            listEl.innerHTML = players.map(p => {
+                const rec = currentAttSession.find(r => r.pid === p.id);
+                const s = rec ? rec.status : 'Hadir';
+                return `
+                <tr class="hover:bg-gray-50 transition border-b">
+                    <td class="p-3 font-bold text-gray-800 text-xs uppercase truncate max-w-[120px]">${p.nickname}</td>
+                    <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Hadir" ${s === 'Hadir' ? 'checked' : ''} onchange="updateAttStatus(${p.id}, 'Hadir')" class="w-4 h-4 text-green-600 accent-green-600"></td>
+                    <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Izin" ${s === 'Izin' ? 'checked' : ''} onchange="updateAttStatus(${p.id}, 'Izin')" class="w-4 h-4 text-yellow-500 accent-yellow-500"></td>
+                    <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Sakit" ${s === 'Sakit' ? 'checked' : ''} onchange="updateAttStatus(${p.id}, 'Sakit')" class="w-4 h-4 text-orange-500 accent-orange-500"></td>
+                    <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Alpa" ${s === 'Alpa' ? 'checked' : ''} onchange="updateAttStatus(${p.id}, 'Alpa')" class="w-4 h-4 text-red-600 accent-red-600"></td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updateAttStatus(pid, status) {
+            const rec = currentAttSession.find(r => r.pid === pid);
+            if (rec) rec.status = status;
+        }
+
+        function closeAttendanceModal() { document.getElementById('attendance-modal').classList.add('hidden'); }
+
+        function saveAttendance() {
+            const date = document.getElementById('att-date').value;
+            const title = document.getElementById('att-title').value.trim();
+            if (!date) return alert("Tanggal wajib diisi!");
+
+            const id = document.getElementById('att-id').value;
+            const attData = {
+                id: id ? parseInt(id) : Date.now(),
+                date,
+                type: document.getElementById('att-type').value,
+                title: title,
+                records: currentAttSession
+            };
+
+            if (id) {
+                const idx = attendances.findIndex(x => x.id == id);
+                attendances[idx] = attData;
+            } else {
+                attendances.push(attData);
+            }
+            saveData();
+            closeAttendanceModal();
+            alert("Data kehadiran berhasil disimpan!");
+        }
+
+        function deleteAttendance(id) {
+            if (confirm("Hapus sesi kehadiran ini?")) {
+                attendances = attendances.filter(a => a.id !== id);
+                saveData();
+            }
+        }
+
+        // RESULT MODAL LOGIC
+        function openResultModal(matchId) {
+            const m = matches.find(x => x.id === matchId);
+            document.getElementById('result-match-id').value = m.id;
+            document.getElementById('result-score-them').value = m.scoreThem;
+            document.getElementById('result-score-us').innerText = m.scoreUs;
+            document.getElementById('result-modal').classList.remove('hidden');
+
+            renderResultPlayers(m);
+        }
+
+        function closeResultModal() { document.getElementById('result-modal').classList.add('hidden'); }
+
+        function renderResultPlayers(match) {
+            const listEl = document.getElementById('result-players-list');
+            listEl.innerHTML = players.map(p => {
+                const part = match.participation.find(x => x.pid === p.id) || { goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, rating: 5, isPlaying: false };
+                return `
+                <tr class="border-b ${part.isPlaying ? 'bg-blue-50/50' : 'bg-white opacity-60'}">
+                    <td class="p-2">
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" ${part.isPlaying ? 'checked' : ''} onchange="updatePart(${p.id}, 'isPlaying', this.checked)" class="w-4 h-4 rounded">
+                            <span class="font-bold text-xs uppercase">${p.nickname}</span>
+                        </div>
+                    </td>
+                    <td class="p-2"><input type="number" step="0.1" value="${part.rating}" onchange="updatePart(${p.id}, 'rating', this.value)" class="w-12 p-1 border rounded text-xs text-center font-bold"></td>
+                    <td class="p-2"><input type="number" value="${part.goals}" onchange="updatePart(${p.id}, 'goals', this.value); updateMatchScore()" class="w-10 p-1 border rounded text-xs text-center"></td>
+                    <td class="p-2"><input type="number" value="${part.assists}" onchange="updatePart(${p.id}, 'assists', this.value)" class="w-10 p-1 border rounded text-xs text-center"></td>
+                    <td class="p-2"><input type="number" value="${part.saves}" onchange="updatePart(${p.id}, 'saves', this.value)" class="w-10 p-1 border rounded text-xs text-center"></td>
+                    <td class="p-2"><input type="number" value="${part.yellowCards}" onchange="updatePart(${p.id}, 'yellowCards', this.value)" class="w-10 p-1 border rounded text-xs text-center"></td>
+                    <td class="p-2"><input type="number" value="${part.redCards}" onchange="updatePart(${p.id}, 'redCards', this.value)" class="w-10 p-1 border rounded text-xs text-center"></td>
+                    <td class="p-2 text-center text-[10px] font-bold ${part.isPlaying ? 'text-green-500' : 'text-gray-300'}">${part.isPlaying ? 'MAIN' : 'OUT'}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function updatePart(pid, key, val) {
+            const matchId = parseInt(document.getElementById('result-match-id').value);
+            const m = matches.find(x => x.id === matchId);
+            const part = m.participation.find(x => x.pid === pid);
+            if (key === 'isPlaying') part[key] = val;
+            else part[key] = parseFloat(val) || 0;
+
+            // Re-render only rows to avoid losing input focus
+            if (key === 'isPlaying') renderResultPlayers(m);
+        }
+
+        function updateMatchScore() {
+            const matchId = parseInt(document.getElementById('result-match-id').value);
+            const m = matches.find(x => x.id === matchId);
+            const totalGoals = m.participation.reduce((sum, p) => sum + (parseInt(p.goals) || 0), 0);
+            m.scoreUs = totalGoals;
+            document.getElementById('result-score-us').innerText = totalGoals;
+        }
+
+        function finishMatchProcessing() {
+            const matchId = parseInt(document.getElementById('result-match-id').value);
+            const m = matches.find(x => x.id === matchId);
+            m.scoreThem = parseInt(document.getElementById('result-score-them').value) || 0;
+            m.status = 'completed';
+            saveData();
+            closeResultModal();
+            alert("Statistik laga berhasil diperbarui!");
+        }
+
+        // ===== TESTS & MEASUREMENT LOGIC =====
+
+        // Helper: convert score (0-100) to grade A/B/C/D/E
+        function scoreToGrade(score) {
+            if (score >= 85) return 'A';
+            if (score >= 70) return 'B';
+            if (score >= 55) return 'C';
+            if (score >= 40) return 'D';
+            return 'E';
+        }
+
+        // Helper: get average test scores per player
+        function getPlayerTestAvg(pid) {
+            const physParams = ['endurance', 'strength', 'agility', 'speed', 'power'];
+            const techParams = ['dribbling', 'passing', 'shooting', 'ballControl'];
+            const allParams = [...physParams, ...techParams];
+            const sums = {}; const counts = {};
+            allParams.forEach(k => { sums[k] = 0; counts[k] = 0; });
+
+            tests.forEach(t => {
+                const rec = t.records.find(r => r.pid === pid);
+                if (!rec) return;
+                allParams.forEach(k => {
+                    if (rec[k] !== null && rec[k] !== undefined && rec[k] !== '') {
+                        sums[k] += parseFloat(rec[k]);
+                        counts[k]++;
+                    }
+                });
+            });
+
+            const result = { hasData: false };
+            allParams.forEach(k => {
+                result[k] = counts[k] > 0 ? sums[k] / counts[k] : null;
+                if (result[k] !== null) result.hasData = true;
+            });
+
+            // Compute averages per category
+            const physVals = physParams.map(k => result[k]).filter(v => v !== null);
+            const techVals = techParams.map(k => result[k]).filter(v => v !== null);
+            result.avgFisik = physVals.length > 0 ? physVals.reduce((a, b) => a + b, 0) / physVals.length : null;
+            result.avgTeknik = techVals.length > 0 ? techVals.reduce((a, b) => a + b, 0) / techVals.length : null;
+            return result;
+        }
+
+        function renderTestSummaryCards() {
+            const el = document.getElementById('test-summary-cards');
+            if (!el) return;
+            const totalSessions = tests.length;
+            const fisikSessions = tests.filter(t => t.type === 'Fisik' || t.type === 'Fisik & Teknik').length;
+            const teknikSessions = tests.filter(t => t.type === 'Teknik' || t.type === 'Fisik & Teknik').length;
+            // Best physical avg player
+            let bestFisikPlayer = '-', bestFisikScore = 0;
+            players.forEach(p => {
+                const avgs = getPlayerTestAvg(p.id);
+                if (avgs.avgFisik !== null && avgs.avgFisik > bestFisikScore) {
+                    bestFisikScore = avgs.avgFisik;
+                    bestFisikPlayer = p.nickname;
+                }
+            });
+            el.innerHTML = `
+                <div class="card p-4 border-l-4 border-l-indigo-500 hover:shadow-md transition">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Total Sesi Tes</p>
+                    <h3 class="text-2xl font-bold text-indigo-600">${totalSessions}</h3>
+                </div>
+                <div class="card p-4 border-l-4 border-l-blue-500 hover:shadow-md transition">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Tes Fisik</p>
+                    <h3 class="text-2xl font-bold text-blue-600">${fisikSessions}</h3>
+                </div>
+                <div class="card p-4 border-l-4 border-l-violet-500 hover:shadow-md transition">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Tes Teknik</p>
+                    <h3 class="text-2xl font-bold text-violet-600">${teknikSessions}</h3>
+                </div>
+                <div class="card p-4 border-l-4 border-l-teal-500 hover:shadow-md transition">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Pemain Terbaik (Fisik)</p>
+                    <h3 class="text-lg font-bold text-teal-600 truncate">${bestFisikPlayer}</h3>
+                    ${bestFisikScore > 0 ? `<p class="text-[10px] text-gray-400">${bestFisikScore.toFixed(0)}/100</p>` : ''}
+                </div>`;
+        }
+
+        function switchTestTab(tab) {
+            currentTestTab = tab;
+            document.getElementById('tab-test-list').classList.toggle('active', tab === 'list');
+            document.getElementById('tab-test-rekap').classList.toggle('active', tab === 'rekap');
+            if (tab === 'list') {
+                document.getElementById('test-sesi-view').classList.remove('hidden');
+                document.getElementById('test-rekap-view').classList.add('hidden');
+                renderTests();
+            } else {
+                document.getElementById('test-sesi-view').classList.add('hidden');
+                document.getElementById('test-rekap-view').classList.remove('hidden');
+                renderTestRekapTable();
+            }
+        }
+
+        function renderTests() {
+            const grid = document.getElementById('test-sesi-view');
+            if (!grid) return;
+            if (tests.length === 0) {
+                grid.innerHTML = `<div class="col-span-full p-12 text-center text-gray-400 font-bold uppercase tracking-widest">Belum ada sesi tes. Klik <span class='text-indigo-500'>Tambah Sesi Tes</span> untuk memulai!</div>`;
+                return;
+            }
+            const typeColors = { 'Fisik': 'bg-indigo-100 text-indigo-600', 'Teknik': 'bg-violet-100 text-violet-600', 'Fisik & Teknik': 'bg-teal-100 text-teal-600' };
+            grid.innerHTML = [...tests].sort((a, b) => new Date(b.date) - new Date(a.date)).map(t => {
+                const colorClass = typeColors[t.type] || 'bg-gray-100 text-gray-600';
+                const participantCount = t.records.filter(r => {
+                    return Object.values(r).some(v => v !== null && v !== undefined && v !== '' && typeof v === 'number');
+                }).length;
+                return `
+                <div class="card p-5 space-y-3 border border-indigo-50 hover:border-indigo-200 transition">
+                    <div class="flex justify-between items-start">
+                        <span class="text-[10px] font-black px-2 py-1 rounded bg-gray-100 text-gray-500 uppercase">${new Date(t.date + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                        <span class="text-[10px] font-black px-2 py-1 rounded ${colorClass} uppercase"><i class="fas fa-flask mr-1"></i>${t.type}</span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-800 truncate">${t.title || 'Sesi Tanpa Judul'}</h4>
+                        <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">${participantCount} Pemain Mengikuti</p>
+                    </div>
+                    <div class="flex gap-2 pt-2 border-t border-gray-100">
+                        <button onclick="openTestModal(${t.id})" class="flex-1 bg-indigo-50 text-indigo-600 py-2 rounded-lg text-xs font-bold hover:bg-indigo-100"><i class="fas fa-edit mr-1"></i>EDIT TES</button>
+                        <button onclick="deleteTest(${t.id})" class="w-10 bg-red-50 text-red-400 py-2 rounded-lg text-xs hover:bg-red-100"><i class="fas fa-trash"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function renderTestRekapTable() {
+            const body = document.getElementById('test-rekap-body');
+            if (!body) return;
+            const physParams = ['endurance', 'strength', 'agility', 'speed', 'power'];
+            const techParams = ['dribbling', 'passing', 'shooting', 'ballControl'];
+            body.innerHTML = players.map(p => {
+                const avgs = getPlayerTestAvg(p.id);
+                const makeCell = (val, bgClass = '') => val !== null
+                    ? `<td class="p-4 text-center ${bgClass}"><div class="flex flex-col items-center gap-1"><span class="text-xs font-bold">${val.toFixed(0)}</span><span class="grade-badge grade-${scoreToGrade(val)}">${scoreToGrade(val)}</span></div></td>`
+                    : `<td class="p-4 text-center text-gray-300 text-xs ${bgClass}">-</td>`;
+
+                const overallAvg = [avgs.avgFisik, avgs.avgTeknik].filter(v => v !== null);
+                const overall = overallAvg.length > 0 ? overallAvg.reduce((a, b) => a + b, 0) / overallAvg.length : null;
+                return `
+                <tr class="border-b hover:bg-indigo-50/20">
+                    <td class="p-4 sticky left-0 bg-white z-10">
+                        <div class="flex items-center gap-2 min-w-[120px]">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-8 h-8 rounded-full object-cover shadow-sm border">
+                            <span class="font-bold text-gray-800 uppercase text-xs truncate">${p.nickname}</span>
+                        </div>
+                    </td>
+                    ${physParams.map(k => makeCell(avgs[k], 'bg-indigo-50/30')).join('')}
+                    ${techParams.map(k => makeCell(avgs[k], 'bg-violet-50/30')).join('')}
+                    ${avgs.avgFisik !== null ? `<td class="p-4 text-center bg-indigo-50"><span class="px-2 py-1 rounded-lg bg-indigo-600 text-white text-xs font-bold">${avgs.avgFisik.toFixed(0)}</span></td>` : '<td class="p-4 text-center text-gray-300">-</td>'}
+                    ${avgs.avgTeknik !== null ? `<td class="p-4 text-center bg-violet-50"><span class="px-2 py-1 rounded-lg bg-violet-600 text-white text-xs font-bold">${avgs.avgTeknik.toFixed(0)}</span></td>` : '<td class="p-4 text-center text-gray-300">-</td>'}
+                    ${overall !== null ? `<td class="p-4 text-center"><span class="px-3 py-1 rounded-lg font-black text-white text-xs" style="background:${overall >= 85 ? '#16a34a' : overall >= 70 ? '#2563eb' : overall >= 55 ? '#ca8a04' : overall >= 40 ? '#ea580c' : '#dc2626'}">${scoreToGrade(overall)}</span></td>` : '<td class="p-4 text-center text-gray-300">-</td>'}
+                </tr>`;
+            }).join('');
+        }
+
+        function openTestModal(testId = null) {
+            document.getElementById('test-modal').classList.remove('hidden');
+            if (testId) {
+                const t = tests.find(x => x.id === testId);
+                document.getElementById('test-modal-title').innerHTML = '<i class="fas fa-flask"></i> Edit Sesi Tes';
+                document.getElementById('test-id').value = t.id;
+                document.getElementById('test-date').value = t.date;
+                document.getElementById('test-type').value = t.type;
+                document.getElementById('test-title').value = t.title || '';
+                currentTestSession = {};
+                t.records.forEach(r => { currentTestSession[r.pid] = { ...r }; });
+            } else {
+                document.getElementById('test-modal-title').innerHTML = '<i class="fas fa-flask"></i> Sesi Tes Baru';
+                document.getElementById('test-id').value = '';
+                document.getElementById('test-date').value = new Date().toISOString().split('T')[0];
+                document.getElementById('test-type').value = 'Fisik';
+                document.getElementById('test-title').value = '';
+                currentTestSession = {};
+                players.forEach(p => { currentTestSession[p.id] = { pid: p.id }; });
+            }
+            renderTestPlayersTable();
+        }
+
+        function renderTestPlayersTable() {
+            const type = document.getElementById('test-type').value;
+            const showFisik = type === 'Fisik' || type === 'Fisik & Teknik';
+            const showTeknik = type === 'Teknik' || type === 'Fisik & Teknik';
+            const physParams = ['endurance', 'strength', 'agility', 'speed', 'power'];
+            const techParams = ['dribbling', 'passing', 'shooting', 'ballControl'];
+            const physLabels = ['Endurance', 'Strength', 'Agility', 'Speed', 'Power'];
+            const techLabels = ['Dribbling', 'Passing', 'Shooting', 'Ball Ctrl'];
+
+            let headerHTML = '<th class="p-3 text-left min-w-[120px]">Nama Pemain</th>';
+            if (showFisik) physLabels.forEach(l => { headerHTML += `<th class="p-3 text-center w-24 bg-indigo-100/50 text-indigo-700">${l}</th>`; });
+            if (showTeknik) techLabels.forEach(l => { headerHTML += `<th class="p-3 text-center w-24 bg-violet-100/50 text-violet-700">${l}</th>`; });
+            document.getElementById('test-header-row').innerHTML = headerHTML;
+
+            const tbody = document.getElementById('test-players-list');
+            tbody.innerHTML = players.map(p => {
+                const rec = currentTestSession[p.id] || { pid: p.id };
+                let rowHTML = `<tr class="hover:bg-gray-50 transition border-b">
+                    <td class="p-3 font-bold text-gray-800 text-xs uppercase">
+                        <div class="flex items-center gap-2">
+                            <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-7 h-7 rounded-full object-cover">
+                            ${p.nickname}
+                        </div>
+                    </td>`;
+                if (showFisik) physParams.forEach(k => {
+                    rowHTML += `<td class="p-2 bg-indigo-50/20"><input type="number" min="0" max="100" placeholder="-" value="${rec[k] ?? ''}" onchange="updateTestRec(${p.id},'${k}',this.value)" class="w-16 p-1 border rounded-lg text-xs text-center font-bold focus:border-indigo-500 outline-none"></td>`;
+                });
+                if (showTeknik) techParams.forEach(k => {
+                    rowHTML += `<td class="p-2 bg-violet-50/20"><input type="number" min="0" max="100" placeholder="-" value="${rec[k] ?? ''}" onchange="updateTestRec(${p.id},'${k}',this.value)" class="w-16 p-1 border rounded-lg text-xs text-center font-bold focus:border-violet-500 outline-none"></td>`;
+                });
+                rowHTML += '</tr>';
+                return rowHTML;
+            }).join('');
+        }
+
+        function updateTestRec(pid, key, val) {
+            if (!currentTestSession[pid]) currentTestSession[pid] = { pid };
+            currentTestSession[pid][key] = val === '' ? null : (parseFloat(val) || 0);
+        }
+
+        function closeTestModal() { document.getElementById('test-modal').classList.add('hidden'); }
+
+        function saveTest() {
+            const date = document.getElementById('test-date').value;
+            if (!date) return alert('Tanggal tes wajib diisi!');
+            const id = document.getElementById('test-id').value;
+            const records = players.map(p => ({ pid: p.id, ...(currentTestSession[p.id] || { pid: p.id }) }));
+            const testData = {
+                id: id ? parseInt(id) : Date.now(),
+                date,
+                type: document.getElementById('test-type').value,
+                title: document.getElementById('test-title').value.trim(),
+                records
+            };
+            if (id) {
+                const idx = tests.findIndex(x => x.id == id);
+                tests[idx] = testData;
+            } else {
+                tests.push(testData);
+            }
+            saveData();
+            closeTestModal();
+            renderTests();
+            renderTestSummaryCards();
+            alert('Data tes berhasil disimpan!');
+        }
+
+        function deleteTest(id) {
+            if (confirm('Hapus sesi tes ini? Nilai rata-rata pemain akan diperbarui.')) {
+                tests = tests.filter(t => t.id !== id);
+                saveData();
+                renderTests();
+                renderTestSummaryCards();
+            }
+        }
+
+        // UTILS
+        function calculateAge(birthdate) {
+            if (!birthdate) return "-";
+            const birth = new Date(birthdate);
+            const now = new Date();
+            let age = now.getFullYear() - birth.getFullYear();
+            const m = now.getMonth() - birth.getMonth();
+            if (m < 0 || (m === 0 && now.getDate() < birth.getDate())) age--;
+            return age >= 0 ? age : "-";
+        }
+    </script>
+</body>
+
+</html>
