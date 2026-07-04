@@ -652,6 +652,12 @@
             <div class="space-y-4">
                 <input type="text" id="sch-opp" placeholder="Nama Lawan"
                     class="w-full p-3 border rounded-xl outline-none font-bold">
+                <select id="sch-type" class="w-full p-3 border rounded-xl outline-none font-bold text-gray-700">
+                    <option value="Friendly">Friendly Match</option>
+                    <option value="Turnamen">Turnamen</option>
+                    <option value="Liga">Liga</option>
+                    <option value="Lainnya">Lainnya</option>
+                </select>
                 <input type="datetime-local" id="sch-date" class="w-full p-3 border rounded-xl outline-none">
                 <div class="flex gap-2">
                     <button onclick="closeScheduleModal()"
@@ -814,6 +820,10 @@
                         </thead>
                         <tbody id="result-players-list"></tbody>
                     </table>
+                </div>
+                <div class="mt-4">
+                    <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Catatan / Evaluasi Laga</label>
+                    <textarea id="result-notes" rows="2" placeholder="Tambahkan catatan permainan, taktik, atau evaluasi laga..." class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold resize-y text-sm"></textarea>
                 </div>
             </div>
             <div class="p-6 border-t bg-gray-50">
@@ -1419,12 +1429,14 @@
         function saveSchedule() {
             const opponent = document.getElementById('sch-opp').value;
             const date = document.getElementById('sch-date').value;
+            const type = document.getElementById('sch-type').value;
             if (!opponent || !date) return alert("Isi semua data jadwal!");
 
             matches.push({
                 id: Date.now(),
                 opponent: opponent.toUpperCase(),
                 date,
+                type: type,
                 status: 'upcoming',
                 scoreUs: 0,
                 scoreThem: 0,
@@ -1459,6 +1471,7 @@
                                 ${m.scoreUs > m.scoreThem ? 'WIN' : (m.scoreUs === m.scoreThem ? 'DRAW' : 'LOSS')}
                             </span>
                         ` : '<span class="text-[10px] font-black px-2 py-1 rounded bg-blue-100 text-blue-600 uppercase">UPCOMING</span>'}
+                        ${m.type ? `<span class="text-[10px] font-black px-2 py-1 rounded bg-purple-100 text-purple-600 uppercase ml-2">${m.type}</span>` : ''}
                     </div>
                     <div class="flex items-center justify-between text-center gap-4 py-2">
                         <div class="flex-1">
@@ -1472,6 +1485,7 @@
                             <p class="text-xs font-bold text-red-600 truncate">${m.opponent}</p>
                         </div>
                     </div>
+                    ${m.notes ? `<div class="pt-2"><p class="text-xs text-gray-500 line-clamp-2 bg-gray-50 p-2 rounded-lg italic">"${m.notes}"</p></div>` : ''}
                     <div class="flex gap-2 pt-2">
                         ${m.status === 'upcoming' ? `
                             <button onclick="openResultModal(${m.id})" class="flex-1 bg-blue-600 text-white py-2 rounded-lg text-xs font-bold hover:bg-blue-700">INPUT HASIL</button>
@@ -1699,6 +1713,7 @@
             document.getElementById('result-match-id').value = m.id;
             document.getElementById('result-score-them').value = m.scoreThem;
             document.getElementById('result-score-us').innerText = m.scoreUs;
+            document.getElementById('result-notes').value = m.notes || "";
             document.getElementById('result-modal').classList.remove('hidden');
 
             renderResultPlayers(m);
@@ -1752,6 +1767,7 @@
             const matchId = parseInt(document.getElementById('result-match-id').value);
             const m = matches.find(x => x.id === matchId);
             m.scoreThem = parseInt(document.getElementById('result-score-them').value) || 0;
+            m.notes = document.getElementById('result-notes').value.trim();
             m.status = 'completed';
             saveData();
             closeResultModal();
