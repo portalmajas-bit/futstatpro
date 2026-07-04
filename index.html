@@ -414,14 +414,14 @@
                 <div id="att-sesi-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 <div id="att-rekap-view" class="card overflow-x-auto hidden">
                     <table class="w-full text-left min-w-[800px]">
-                        <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b">
+                        <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b select-none">
                             <tr>
-                                <th class="p-4">Pemain</th>
-                                <th class="p-4 text-center">Hadir</th>
-                                <th class="p-4 text-center">Izin</th>
-                                <th class="p-4 text-center">Sakit</th>
-                                <th class="p-4 text-center">Alpa</th>
-                                <th class="p-4 text-center">Persentase</th>
+                                <th class="p-4 cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('pemain')">Pemain <i id="sort-icon-pemain" class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('hadir')">Hadir <i id="sort-icon-hadir" class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('izin')">Izin <i id="sort-icon-izin" class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('sakit')">Sakit <i id="sort-icon-sakit" class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('alpa')">Alpa <i id="sort-icon-alpa" class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('persentase')">Persentase <i id="sort-icon-persentase" class="fas fa-sort-down ml-1 text-gray-600"></i></th>
                             </tr>
                         </thead>
                         <tbody id="att-rekap-body" class="divide-y text-sm"></tbody>
@@ -835,6 +835,8 @@
         let currentMatchTab = 'upcoming';
         let currentAttTab = 'sesi';
         let currentAttSession = [];
+        let attRekapSortCol = 'persentase';
+        let attRekapSortDir = 'desc';
         let currentTestTab = 'list';
         let currentTestSession = {}; // { pid: { endurance, strength, agility, speed, power, dribbling, passing, shooting, ballControl } }
         let performanceChart = null;
@@ -1528,7 +1530,9 @@
 
         function renderAttendanceRecap() {
             const body = document.getElementById('att-rekap-body');
-            body.innerHTML = players.map(p => {
+            
+            // Calculate data first
+            let recapData = players.map(p => {
                 let hadir = 0, izin = 0, sakit = 0, alpa = 0;
                 attendances.forEach(att => {
                     const rec = att.records.find(r => r.pid === p.id);
@@ -1541,24 +1545,64 @@
                 });
                 const total = hadir + izin + sakit + alpa;
                 const percent = total > 0 ? Math.round((hadir / total) * 100) : 0;
+                return { ...p, hadir, izin, sakit, alpa, persentase: percent };
+            });
 
+            // Sort data
+            recapData.sort((a, b) => {
+                let valA = a[attRekapSortCol];
+                let valB = b[attRekapSortCol];
+                
+                if (attRekapSortCol === 'pemain') {
+                    valA = a.nickname.toLowerCase();
+                    valB = b.nickname.toLowerCase();
+                }
+
+                if (valA < valB) return attRekapSortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return attRekapSortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            // Render data
+            body.innerHTML = recapData.map(p => {
                 return `
-                <tr class="border-b hover:bg-gray-50/50">
+                <tr class="border-b hover:bg-gray-50/50 transition">
                     <td class="p-4 sticky left-0 bg-white z-10">
                         <div class="flex items-center gap-2 min-w-[120px]">
                             <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-8 h-8 rounded-full object-cover shadow-sm border border-gray-100">
                             <span class="font-bold text-gray-800 uppercase text-xs truncate">${p.nickname}</span>
                         </div>
                     </td>
-                    <td class="p-4 text-center font-bold text-green-600 bg-green-50/30">${hadir}</td>
-                    <td class="p-4 text-center font-bold text-yellow-600">${izin}</td>
-                    <td class="p-4 text-center font-bold text-orange-600">${sakit}</td>
-                    <td class="p-4 text-center font-bold text-red-600">${alpa}</td>
+                    <td class="p-4 text-center font-bold text-green-600 bg-green-50/30">${p.hadir}</td>
+                    <td class="p-4 text-center font-bold text-yellow-600">${p.izin}</td>
+                    <td class="p-4 text-center font-bold text-orange-600">${p.sakit}</td>
+                    <td class="p-4 text-center font-bold text-red-600">${p.alpa}</td>
                     <td class="p-4 text-center">
-                        <span class="px-2 py-1 rounded-lg ${percent >= 75 ? 'bg-green-600' : (percent >= 50 ? 'bg-yellow-500' : 'bg-red-500')} text-white text-[10px] font-black">${percent}%</span>
+                        <span class="px-2 py-1 rounded-lg ${p.persentase >= 75 ? 'bg-green-600' : (p.persentase >= 50 ? 'bg-yellow-500' : 'bg-red-500')} text-white text-[10px] font-black">${p.persentase}%</span>
                     </td>
                 </tr>`;
             }).join('');
+            
+            // Update icons
+            const cols = ['pemain', 'hadir', 'izin', 'sakit', 'alpa', 'persentase'];
+            cols.forEach(col => {
+                const icon = document.getElementById('sort-icon-' + col);
+                if (icon) {
+                    icon.className = 'fas ml-1 transition ' + (col === attRekapSortCol 
+                        ? (attRekapSortDir === 'asc' ? 'fa-sort-up text-gray-800' : 'fa-sort-down text-gray-800') 
+                        : 'fa-sort text-gray-300');
+                }
+            });
+        }
+
+        function sortAttRekap(col) {
+            if (attRekapSortCol === col) {
+                attRekapSortDir = attRekapSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                attRekapSortCol = col;
+                attRekapSortDir = 'desc'; // default to desc when switching columns, good for metrics
+            }
+            renderAttendanceRecap();
         }
 
         function openAttendanceModal(attId = null) {
