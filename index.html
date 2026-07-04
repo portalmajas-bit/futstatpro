@@ -709,6 +709,10 @@
                         <tbody id="att-players-list" class="divide-y"></tbody>
                     </table>
                 </div>
+                <div class="mt-4">
+                    <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Catatan / Evaluasi Sesi</label>
+                    <textarea id="att-notes" rows="2" placeholder="Tambahkan catatan, hasil evaluasi, atau keterangan sesi ini..." class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold resize-y text-sm"></textarea>
+                </div>
             </div>
             <div class="p-6 border-t bg-gray-50">
                 <button onclick="saveAttendance()"
@@ -1519,6 +1523,7 @@
                     <div>
                         <h4 class="font-bold text-gray-800 text-lg truncate">${att.title || 'Sesi Tanpa Judul'}</h4>
                         <p class="text-[10px] text-gray-400 font-bold uppercase mt-1">${att.records.length} Pemain Tercatat</p>
+                        ${att.notes ? `<p class="text-xs text-gray-500 mt-2 line-clamp-2">${att.notes}</p>` : ''}
                     </div>
                     <div class="flex gap-2 pt-2 border-t border-gray-100">
                         <button onclick="openAttendanceModal(${att.id})" class="flex-1 bg-gray-50 text-gray-600 py-2 rounded-lg text-xs font-bold hover:bg-gray-100">EDIT ABSENSI</button>
@@ -1614,9 +1619,10 @@
                 document.getElementById('att-date').value = att.date;
                 document.getElementById('att-type').value = att.type;
                 document.getElementById('att-title').value = att.title;
+                document.getElementById('att-notes').value = att.notes || "";
                 currentAttSession = players.map(p => {
                     const existing = att.records.find(r => r.pid === p.id);
-                    return { pid: p.id, status: existing ? existing.status : 'Hadir' };
+                    return { pid: p.id, status: existing ? existing.status : 'Alpa' };
                 });
             } else {
                 document.getElementById('att-modal-title').innerText = "Sesi Kehadiran Baru";
@@ -1624,7 +1630,8 @@
                 document.getElementById('att-date').value = new Date().toISOString().split('T')[0];
                 document.getElementById('att-type').value = "Latihan";
                 document.getElementById('att-title').value = "";
-                currentAttSession = players.map(p => ({ pid: p.id, status: 'Hadir' }));
+                document.getElementById('att-notes').value = "";
+                currentAttSession = players.map(p => ({ pid: p.id, status: 'Alpa' }));
             }
             renderAttendancePlayers();
         }
@@ -1633,7 +1640,7 @@
             const listEl = document.getElementById('att-players-list');
             listEl.innerHTML = players.map(p => {
                 const rec = currentAttSession.find(r => r.pid === p.id);
-                const s = rec ? rec.status : 'Hadir';
+                const s = rec ? rec.status : 'Alpa';
                 return `
                 <tr class="hover:bg-gray-50 transition border-b">
                     <td class="p-3 font-bold text-gray-800 text-xs uppercase truncate max-w-[120px]">${p.nickname}</td>
@@ -1655,6 +1662,7 @@
         function saveAttendance() {
             const date = document.getElementById('att-date').value;
             const title = document.getElementById('att-title').value.trim();
+            const notes = document.getElementById('att-notes').value.trim();
             if (!date) return alert("Tanggal wajib diisi!");
 
             const id = document.getElementById('att-id').value;
@@ -1663,6 +1671,7 @@
                 date,
                 type: document.getElementById('att-type').value,
                 title: title,
+                notes: notes,
                 records: currentAttSession
             };
 
