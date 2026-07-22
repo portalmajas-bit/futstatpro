@@ -349,8 +349,14 @@
                         <h2 class="text-2xl font-bold text-gray-800">Statistik Performa</h2>
                         <p class="text-xs text-gray-500">Data akumulasi performa pertandingan.</p>
                     </div>
-                    <div class="text-xs font-bold text-blue-600 px-4 py-2 bg-blue-50 rounded-full">
-                        Total Pertandingan: <span id="stats-total-matches">0</span>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <div class="text-xs font-bold text-blue-600 px-4 py-2 bg-blue-50 rounded-full">
+                            Total Pertandingan: <span id="stats-total-matches">0</span>
+                        </div>
+                        <button onclick="downloadStatsCSV()"
+                            class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700 transition">
+                            <i class="fas fa-file-excel mr-2"></i> Download CSV
+                        </button>
                     </div>
                 </div>
                 <div class="card overflow-x-auto">
@@ -400,10 +406,16 @@
             <section id="page-attendance" class="page-content hidden space-y-6">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 class="text-2xl font-bold text-gray-800">Kehadiran & Rekap</h2>
-                    <button onclick="openAttendanceModal()"
-                        class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
-                        <i class="fas fa-plus mr-2"></i> Tambah Sesi
-                    </button>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button onclick="downloadAttendanceCSV()"
+                            class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700 transition">
+                            <i class="fas fa-file-excel mr-2"></i> Download Rekap
+                        </button>
+                        <button onclick="openAttendanceModal()"
+                            class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
+                            <i class="fas fa-plus mr-2"></i> Tambah Sesi
+                        </button>
+                    </div>
                 </div>
                 <div class="flex border-b border-gray-200">
                     <button onclick="switchAttTab('sesi')" id="tab-att-sesi"
@@ -2021,6 +2033,88 @@
                 renderTests();
                 renderTestSummaryCards();
             }
+        }
+
+        // EXPORT LOGIC
+        function downloadStatsCSV() {
+            let csvContent = "Nama Pemain,Main,MVP,Gol,Asis,Save,YC,RC,W-D-L,Avg Rating,Fisik,Teknik\n";
+            const sortedPlayers = [...players].sort((a, b) => b.stats.avgRating - a.stats.avgRating);
+            sortedPlayers.forEach(p => {
+                const avgs = getPlayerTestAvg(p.id);
+                const fysAvg = avgs.avgFisik !== null ? avgs.avgFisik.toFixed(0) : "-";
+                const tekAvg = avgs.avgTeknik !== null ? avgs.avgTeknik.toFixed(0) : "-";
+                const row = [
+                    p.nickname,
+                    p.stats.matchesPlayed,
+                    p.stats.mvpCount,
+                    p.stats.goals,
+                    p.stats.assists,
+                    p.stats.saves,
+                    p.stats.yellowCards,
+                    p.stats.redCards,
+                    `${p.stats.wins}-${p.stats.draws}-${p.stats.losses}`,
+                    p.stats.avgRating,
+                    fysAvg,
+                    tekAvg
+                ].join(',');
+                csvContent += row + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "statistik_pemain.csv";
+            link.click();
+        }
+
+        function downloadAttendanceCSV() {
+            let csvContent = "Nama Pemain,Hadir,Izin,Sakit,Alpa,Persentase\n";
+            
+            let recapData = players.map(p => {
+                let hadir = 0, izin = 0, sakit = 0, alpa = 0;
+                attendances.forEach(att => {
+                    const rec = att.records.find(r => r.pid === p.id);
+                    if (rec) {
+                        if (rec.status === 'Hadir') hadir++;
+                        else if (rec.status === 'Izin') izin++;
+                        else if (rec.status === 'Sakit') sakit++;
+                        else if (rec.status === 'Alpa') alpa++;
+                    }
+                });
+                const total = hadir + izin + sakit + alpa;
+                const percent = total > 0 ? Math.round((hadir / total) * 100) : 0;
+                return { ...p, hadir, izin, sakit, alpa, persentase: percent };
+            });
+
+            recapData.sort((a, b) => {
+                let valA = a[attRekapSortCol];
+                let valB = b[attRekapSortCol];
+                if (attRekapSortCol === 'pemain') {
+                    valA = a.nickname.toLowerCase();
+                    valB = b.nickname.toLowerCase();
+                }
+                if (valA < valB) return attRekapSortDir === 'asc' ? -1 : 1;
+                if (valA > valB) return attRekapSortDir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
+            recapData.forEach(p => {
+                const row = [
+                    p.nickname,
+                    p.hadir,
+                    p.izin,
+                    p.sakit,
+                    p.alpa,
+                    p.persentase + '%'
+                ].join(',');
+                csvContent += row + "\n";
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "rekap_kehadiran.csv";
+            link.click();
         }
 
         // UTILS
