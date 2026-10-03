@@ -3,9 +3,44 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>FutsalStats Pro - Player Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            bgOuter: '#888582', // The outer background
+                            bgInner: '#EBF1F5', // The main app area
+                            sideTop: '#1B4F5E', // Top sidebar color
+                            sideBot: '#262840', // Bottom sidebar color
+                            cardDark: '#262840',
+                            cardTeal: '#1B4F5E',
+                            cardYellow: '#FDB751',
+                            cardLight: '#FFFFFF'
+                        },
+                        blue: {
+                            50: '#EBF1F5',
+                            100: '#EBF1F5',
+                            200: '#EBF1F5',
+                            300: '#1B4F5E',
+                            400: '#1B4F5E',
+                            500: '#1B4F5E', // Default primary 
+                            600: '#1B4F5E', // Buttons
+                            700: '#11343e', // Hover
+                            800: '#262840',
+                            900: '#262840',
+                        },
+                        slate: {
+                            900: '#262840',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -13,19 +48,30 @@
 
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
+            background-color: #888582;
+        }
+
+        .sidebar-link {
+            border-radius: 9999px 0 0 9999px;
+            margin-left: 1.5rem;
+            padding-left: 1.5rem;
+            width: calc(100% - 1.5rem);
+            margin-bottom: 0.25rem;
         }
 
         .sidebar-link.active {
-            background-color: #2563eb;
-            color: white;
+            background-color: #EBF1F5;
+            color: #1B4F5E !important;
+            box-shadow: -4px 4px 10px rgba(0, 0, 0, 0.05);
+            font-weight: 800;
         }
 
         .card {
             background: white;
-            border-radius: 16px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
+            border: 1px solid #f1f5f9;
+            transition: all 0.3s ease;
         }
 
         .grade-badge {
@@ -84,7 +130,7 @@
             position: fixed;
             inset: 0;
             z-index: 100;
-            background: #f8fafc;
+            background: linear-gradient(135deg, #0f3032 0%, #071718 100%);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -92,51 +138,57 @@
     </style>
 </head>
 
-<body class="min-h-screen bg-gray-50">
+<body class="min-h-screen bg-brand-bgInner">
 
     <!-- LOGIN SCREEN -->
     <div id="login-screen">
-        <div class="card p-8 w-full max-w-sm m-4">
-            <div class="text-center mb-6">
-                <div
-                    class="w-16 h-16 bg-blue-600 text-white rounded-2xl flex items-center justify-center text-3xl mx-auto mb-4 shadow-lg">
-                    <i class="fas fa-futbol"></i>
-                </div>
-                <h1 class="text-2xl font-black text-gray-800">FUTSALPRO</h1>
-                <p class="text-sm text-gray-500 font-bold">Login Sistem Manajemen</p>
+        <div class="w-full max-w-sm m-4 px-4">
+            <div class="text-center mb-12">
+                <h1 class="text-3xl font-black text-white tracking-wider">USER LOGIN</h1>
             </div>
-            <div class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Username</label>
-                    <input type="text" id="login-username"
-                        class="w-full p-3 border rounded-xl font-bold bg-gray-50 focus:bg-white outline-none focus:border-blue-500 transition">
+            <div class="space-y-6">
+                <!-- Username -->
+                <div class="flex items-center bg-white/10 rounded-full p-1.5 pl-1.5 pr-6">
+                    <div
+                        class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#0f3032] shrink-0 text-lg">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <input type="text" id="login-username" placeholder="Username"
+                        class="bg-transparent text-white placeholder-white/60 px-4 w-full outline-none font-semibold text-lg">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Password</label>
-                    <input type="password" id="login-password"
-                        class="w-full p-3 border rounded-xl font-bold bg-gray-50 focus:bg-white outline-none focus:border-blue-500 transition"
+                <!-- Password -->
+                <div class="flex items-center bg-white/10 rounded-full p-1.5 pl-6 pr-1.5 mb-10">
+                    <input type="password" id="login-password" placeholder="Password"
+                        class="bg-transparent text-white placeholder-white/60 px-2 w-full outline-none font-semibold text-lg"
                         onkeypress="if(event.key === 'Enter') performLogin()">
+                    <div
+                        class="w-12 h-12 bg-white rounded-full flex items-center justify-center text-[#0f3032] shrink-0 text-lg">
+                        <i class="fas fa-lock"></i>
+                    </div>
                 </div>
+
                 <button onclick="performLogin()"
-                    class="w-full bg-blue-600 text-white py-3 rounded-xl font-black shadow-lg hover:bg-blue-700 transition mt-2">LOGIN</button>
+                    class="w-full bg-white text-[#0f3032] py-4 rounded-full font-black text-lg shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 mt-8">LOGIN</button>
             </div>
         </div>
     </div>
 
     <!-- APP WRAPPER -->
-    <div id="app-wrapper" class="h-screen flex-col md:flex-row w-full overflow-hidden relative" style="display: none;">
+    <div id="app-wrapper" class="h-screen flex-col md:flex-row w-full bg-brand-bgInner overflow-hidden relative"
+        style="display: none;">
 
         <!-- MOBILE HEADER -->
         <div
-            class="md:hidden bg-white border-b border-gray-200 p-4 flex justify-between items-center z-40 flex-shrink-0">
+            class="md:hidden bg-gradient-to-r from-slate-900 via-blue-900 to-blue-600 p-4 flex justify-between items-center z-40 flex-shrink-0 shadow-lg border-b-0">
             <div class="flex items-center gap-3">
                 <div
-                    class="w-8 h-8 bg-blue-600 text-white rounded-xl flex items-center justify-center font-black shadow-md">
-                    <i class="fas fa-futbol"></i></div>
-                <h1 class="font-black text-gray-800 text-lg uppercase tracking-tight" id="mobile-header-title">FUTSALPRO
+                    class="w-8 h-8 bg-white/20 backdrop-blur-md text-white rounded-xl flex items-center justify-center font-black shadow-inner border border-white/10">
+                    <i class="fas fa-futbol"></i>
+                </div>
+                <h1 class="font-black text-white text-lg uppercase tracking-tight" id="mobile-header-title">FUTSALPRO
                 </h1>
             </div>
-            <button onclick="toggleSidebar()" class="text-gray-500 hover:text-blue-600 text-2xl px-2">
+            <button onclick="toggleSidebar()" class="text-white hover:text-blue-200 text-2xl px-2 transition-all">
                 <i class="fas fa-bars"></i>
             </button>
         </div>
@@ -147,61 +199,62 @@
 
         <!-- SIDEBAR -->
         <nav id="sidebar"
-            class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm z-50 h-full flex-shrink-0">
-            <div class="p-6 flex items-center gap-3">
-                <img id="sidebar-logo" src="https://ui-avatars.com/api/?name=Futsal+Pro&background=2563eb&color=fff"
-                    class="w-12 h-12 rounded-xl object-cover" alt="Logo">
+            class="fixed inset-y-0 left-0 transform -translate-x-full md:relative md:translate-x-0 transition-transform duration-300 ease-in-out w-72 bg-brand-sideBot flex flex-col shadow-[10px_0_30px_rgba(0,0,0,0.1)] z-50 h-full flex-shrink-0 overflow-hidden">
+            <div
+                class="p-8 flex flex-col items-center gap-4 bg-brand-sideTop text-center mb-6 shadow-md rounded-b-[2.5rem]">
+                <img id="sidebar-logo" src="https://ui-avatars.com/api/?name=Futsal+Pro&background=ffffff&color=2563eb"
+                    class="w-20 h-20 rounded-full object-cover shadow-lg border-4 border-white/20" alt="Logo">
                 <div>
-                    <h1 id="sidebar-team-name" class="text-sm font-extrabold text-blue-600 truncate italic uppercase">
+                    <h1 id="sidebar-team-name" class="text-base font-black text-white truncate tracking-wider">
                         FUTSALPRO</h1>
-                    <p id="sidebar-team-slogan" class="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                    <p id="sidebar-team-slogan" class="text-xs text-white/70 font-bold tracking-tighter">
                         Elite Team</p>
                 </div>
             </div>
-            <div class="flex flex-col gap-1 px-4">
+            <div class="flex flex-col gap-1 overflow-y-auto pb-4 w-full">
                 <button onclick="showPage('dashboard')" id="nav-dashboard"
-                    class="sidebar-link active flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    class="sidebar-link active flex items-center gap-4 py-3 text-white/70 font-semibold hover:bg-white/5 hover:text-white transition-all duration-300 text-left">
                     <i class="fas fa-home w-5"></i> Dashboard
                 </button>
                 <button onclick="showPage('players')" id="nav-players"
-                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    class="sidebar-link flex items-center gap-4 py-3 text-white/70 font-semibold hover:bg-white/5 hover:text-white transition-all duration-300 text-left">
                     <i class="fas fa-user-gear w-5"></i> Manajemen Pemain
                 </button>
                 <button onclick="showPage('stats')" id="nav-stats"
-                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    class="sidebar-link flex items-center gap-4 py-3 text-white/70 font-semibold hover:bg-white/5 hover:text-white transition-all duration-300 text-left">
                     <i class="fas fa-chart-line w-5"></i> Statistik Pemain
                 </button>
                 <button onclick="showPage('matches')" id="nav-matches"
-                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    class="sidebar-link flex items-center gap-4 py-3 text-white/70 font-semibold hover:bg-white/5 hover:text-white transition-all duration-300 text-left">
                     <i class="fas fa-calendar-check w-5"></i> Jadwal & Hasil
                 </button>
                 <button onclick="showPage('attendance')" id="nav-attendance"
-                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    class="sidebar-link flex items-center gap-4 py-3 text-white/70 font-semibold hover:bg-white/5 hover:text-white transition-all duration-300 text-left">
                     <i class="fas fa-clipboard-list w-5"></i> Kehadiran Atlet
                 </button>
                 <button onclick="showPage('tests')" id="nav-tests"
-                    class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                    class="sidebar-link flex items-center gap-4 py-3 text-white/70 font-semibold hover:bg-white/5 hover:text-white transition-all duration-300 text-left">
                     <i class="fas fa-flask w-5"></i> Tes &amp; Pengukuran
                 </button>
-                <div class="mt-4 pt-4 border-t border-gray-100">
+                <div class="mt-4 pt-4 border-t border-white/10 w-[calc(100%-1.5rem)] ml-6">
                     <button onclick="showPage('users')" id="nav-users"
-                        class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                        class="sidebar-link flex items-center gap-4 py-3 text-white/70 font-semibold hover:bg-white/5 hover:text-white transition-all duration-300 text-left !ml-0 w-full !pl-4 rounded-xl">
                         <i class="fas fa-users w-5"></i> Manajemen Pengguna
                     </button>
                     <button onclick="showPage('settings')" id="nav-settings"
-                        class="sidebar-link flex items-center gap-3 p-3 rounded-xl text-gray-500 font-semibold hover:bg-gray-50 transition w-full text-left">
+                        class="sidebar-link flex items-center gap-4 py-3 text-white/70 font-semibold hover:bg-white/5 hover:text-white transition-all duration-300 text-left !ml-0 w-full !pl-4 rounded-xl">
                         <i class="fas fa-cog w-5"></i> Pengaturan Tim
                     </button>
                     <button onclick="syncToDatabase(event)"
-                        class="sidebar-link flex items-center gap-3 p-3 mt-2 rounded-xl text-blue-500 font-semibold hover:bg-blue-50 transition w-full text-left">
+                        class="sidebar-link flex items-center gap-4 py-3 mt-2 text-brand-cardYellow font-semibold hover:bg-brand-cardYellow/10 transition-all duration-300 text-left !ml-0 w-full !pl-4 rounded-xl">
                         <i class="fas fa-cloud-upload-alt w-5"></i> Simpan ke Cloud
                     </button>
                     <button onclick="loadFromDatabase(event)"
-                        class="sidebar-link flex items-center gap-3 p-3 mt-2 rounded-xl text-green-500 font-semibold hover:bg-green-50 transition w-full text-left">
+                        class="sidebar-link flex items-center gap-4 py-3 mt-2 text-emerald-300 font-semibold hover:bg-emerald-500/10 transition-all duration-300 text-left !ml-0 w-full !pl-4 rounded-xl">
                         <i class="fas fa-cloud-download-alt w-5"></i> Muat dari Cloud
                     </button>
                     <button onclick="performLogout()"
-                        class="sidebar-link flex items-center gap-3 p-3 mt-2 rounded-xl text-red-500 font-semibold hover:bg-red-50 transition w-full text-left">
+                        class="sidebar-link flex items-center gap-4 py-3 mt-2 text-red-300 font-semibold hover:bg-red-500/20 transition-all duration-300 text-left !ml-0 w-full !pl-4 rounded-xl">
                         <i class="fas fa-sign-out-alt w-5"></i> Logout
                     </button>
                 </div>
@@ -221,41 +274,83 @@
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="card p-4 border-l-4 border-l-blue-500 hover:shadow-md transition">
-                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Pemain Terdaftar</p>
-                        <h3 id="stat-player-count" class="text-xl md:text-2xl font-bold text-gray-800">0</h3>
+                    <div
+                        class="bg-brand-cardTeal p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden">
+                        <div
+                            class="absolute right-4 top-4 bg-white/20 w-8 h-8 flex items-center justify-center rounded-full text-white">
+                            <i class="fas fa-users"></i></div>
+                        <p class="text-[10px] md:text-xs font-bold text-white/70 uppercase">Pemain Terdaftar</p>
+                        <h3 id="stat-player-count" class="text-xl md:text-2xl font-black text-white mt-2">0</h3>
                     </div>
-                    <div class="card p-4 border-l-4 border-l-teal-500 hover:shadow-md transition">
-                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Rata-rata Usia</p>
-                        <h3 id="stat-avg-age" class="text-xl md:text-2xl font-bold text-teal-600">0</h3>
+                    <div
+                        class="bg-brand-cardYellow p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden">
+                        <div
+                            class="absolute right-4 top-4 bg-black/10 w-8 h-8 flex items-center justify-center rounded-full text-brand-cardDark">
+                            <i class="fas fa-birthday-cake"></i></div>
+                        <p class="text-[10px] md:text-xs font-bold text-brand-cardDark/70 uppercase">Rata-rata Usia</p>
+                        <h3 id="stat-avg-age" class="text-xl md:text-2xl font-black text-brand-cardDark mt-2">0</h3>
                     </div>
-                    <div class="card p-4 border-l-4 border-l-indigo-500 hover:shadow-md transition">
-                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Gol Tim</p>
-                        <h3 id="stat-total-goals" class="text-xl md:text-2xl font-bold text-indigo-600">0</h3>
+                    <div
+                        class="bg-brand-cardTeal p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden">
+                        <div
+                            class="absolute right-4 top-4 bg-white/20 w-8 h-8 flex items-center justify-center rounded-full text-white">
+                            <i class="fas fa-futbol"></i></div>
+                        <p class="text-[10px] md:text-xs font-bold text-white/70 uppercase">Total Gol Tim</p>
+                        <h3 id="stat-total-goals" class="text-xl md:text-2xl font-black text-white mt-2">0</h3>
                     </div>
-                    <div class="card p-4 border-l-4 border-l-purple-500 hover:shadow-md transition">
-                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Kebobolan</p>
-                        <h3 id="stat-total-conceded" class="text-xl md:text-2xl font-bold text-purple-600 truncate">0
+                    <div
+                        class="bg-brand-cardDark p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden">
+                        <div
+                            class="absolute right-4 top-4 bg-white/10 w-8 h-8 flex items-center justify-center rounded-full text-white">
+                            <i class="fas fa-shield-alt"></i></div>
+                        <p class="text-[10px] md:text-xs font-bold text-white/70 uppercase">Total Kebobolan</p>
+                        <h3 id="stat-total-conceded" class="text-xl md:text-2xl font-black text-white mt-2 truncate">0
                         </h3>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div class="card p-4 border-l-4 border-l-green-500 hover:shadow-md transition bg-green-50/30">
-                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Menang</p>
-                        <h3 id="stat-total-wins" class="text-xl md:text-2xl font-bold text-green-600">0</h3>
+                    <div
+                        class="bg-brand-cardTeal p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden">
+                        <div
+                            class="absolute right-4 top-4 bg-white/20 w-8 h-8 flex items-center justify-center rounded-full text-white">
+                            <i class="fas fa-check"></i></div>
+                        <p class="text-[10px] md:text-xs font-bold text-white/70 uppercase">Total Menang</p>
+                        <h3 id="stat-total-wins" class="text-xl md:text-2xl font-black text-white mt-2">0</h3>
                     </div>
-                    <div class="card p-4 border-l-4 border-l-yellow-500 hover:shadow-md transition bg-yellow-50/30">
-                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Seri</p>
-                        <h3 id="stat-total-draws" class="text-xl md:text-2xl font-bold text-yellow-600">0</h3>
+                    <div
+                        class="bg-brand-cardYellow p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden">
+                        <div
+                            class="absolute right-4 top-4 bg-black/10 w-8 h-8 flex items-center justify-center rounded-full text-brand-cardDark">
+                            <i class="fas fa-minus"></i></div>
+                        <p class="text-[10px] md:text-xs font-bold text-brand-cardDark/70 uppercase">Total Seri</p>
+                        <h3 id="stat-total-draws" class="text-xl md:text-2xl font-black text-brand-cardDark mt-2">0</h3>
                     </div>
-                    <div class="card p-4 border-l-4 border-l-red-500 hover:shadow-md transition bg-red-50/30">
-                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Total Kalah</p>
-                        <h3 id="stat-total-losses" class="text-xl md:text-2xl font-bold text-red-600">0</h3>
+                    <div
+                        class="bg-brand-cardTeal p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden">
+                        <div
+                            class="absolute right-4 top-4 bg-white/20 w-8 h-8 flex items-center justify-center rounded-full text-white">
+                            <i class="fas fa-times"></i></div>
+                        <p class="text-[10px] md:text-xs font-bold text-white/70 uppercase">Total Kalah</p>
+                        <h3 id="stat-total-losses" class="text-xl md:text-2xl font-black text-white mt-2">0</h3>
                     </div>
-                    <div class="card p-4 border-l-4 border-l-orange-500 hover:shadow-md transition">
-                        <p class="text-[10px] md:text-xs font-bold text-gray-400 uppercase">Win Rate</p>
-                        <h3 id="stat-win-rate" class="text-xl md:text-2xl font-bold text-orange-600">0%</h3>
+                    <div
+                        class="bg-brand-cardDark p-6 rounded-3xl shadow-lg transition-transform duration-300 hover:-translate-y-1 relative overflow-hidden">
+                        <div
+                            class="absolute right-4 top-4 bg-white/10 w-8 h-8 flex items-center justify-center rounded-full text-white">
+                            <i class="fas fa-percentage"></i></div>
+                        <p class="text-[10px] md:text-xs font-bold text-white/70 uppercase">Win Rate</p>
+                        <h3 id="stat-win-rate" class="text-xl md:text-2xl font-black text-white mt-2">0%</h3>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="card flex flex-col">
+                        <div
+                            class="p-4 border-b font-bold text-gray-700 bg-gray-50/50 rounded-t-2xl flex items-center gap-2">
+                            <i class="fas fa-calendar-alt text-teal-500"></i> Kalender Jadwal Pertandingan
+                        </div>
+                        <div id="dashboard-calendar" class="p-4 flex gap-4 overflow-x-auto pb-6 scroll-smooth"></div>
                     </div>
                 </div>
 
@@ -319,7 +414,7 @@
                             <input type="file" class="hidden" accept=".csv" onchange="importCSV(this)">
                         </label>
                         <button onclick="openPlayerModal()"
-                            class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 transition shadow-lg shadow-blue-100">
+                            class="bg-blue-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-blue-500/30 transition-all duration-300 shadow-lg shadow-blue-100">
                             <i class="fas fa-plus mr-1"></i> Tambah Pemain
                         </button>
                     </div>
@@ -331,6 +426,8 @@
                                 <tr>
                                     <th class="p-4">Biodata Pemain</th>
                                     <th class="p-4">Usia</th>
+                                    <th class="p-4 text-center">Posisi</th>
+                                    <th class="p-4 text-center">Lapis</th>
                                     <th class="p-4 text-center">Fisik (TB/BB)</th>
                                     <th class="p-4 text-center">Grade Kemampuan</th>
                                     <th class="p-4 text-right">Aksi</th>
@@ -354,7 +451,7 @@
                             Total Pertandingan: <span id="stats-total-matches">0</span>
                         </div>
                         <button onclick="downloadStatsCSV()"
-                            class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700 transition">
+                            class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700 hover:-translate-y-0.5 hover:shadow-green-500/30 transition-all duration-300">
                             <i class="fas fa-file-excel mr-2"></i> Download CSV
                         </button>
                     </div>
@@ -367,6 +464,7 @@
                                 <th class="p-4 text-center">Main</th>
                                 <th class="p-4 text-center bg-yellow-500/20 text-yellow-800"><i
                                         class="fas fa-crown"></i> MVP</th>
+                                <th class="p-4 text-center">Shoot</th>
                                 <th class="p-4 text-center">Gol</th>
                                 <th class="p-4 text-center">Asis</th>
                                 <th class="p-4 text-center">Save</th>
@@ -389,7 +487,7 @@
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 class="text-2xl font-bold text-gray-800">Jadwal & Hasil</h2>
                     <button onclick="openScheduleModal()"
-                        class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
+                        class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-blue-500/30 transition-all duration-300">
                         <i class="fas fa-calendar-plus mr-2"></i> Jadwal Baru
                     </button>
                 </div>
@@ -408,11 +506,11 @@
                     <h2 class="text-2xl font-bold text-gray-800">Kehadiran & Rekap</h2>
                     <div class="flex flex-wrap items-center gap-2">
                         <button onclick="downloadAttendanceCSV()"
-                            class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700 transition">
+                            class="bg-green-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-green-700 hover:-translate-y-0.5 hover:shadow-green-500/30 transition-all duration-300">
                             <i class="fas fa-file-excel mr-2"></i> Download Rekap
                         </button>
                         <button onclick="openAttendanceModal()"
-                            class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 transition">
+                            class="bg-blue-600 text-white px-6 py-2 rounded-xl font-bold shadow-lg hover:bg-blue-700 hover:-translate-y-0.5 hover:shadow-blue-500/30 transition-all duration-300">
                             <i class="fas fa-plus mr-2"></i> Tambah Sesi
                         </button>
                     </div>
@@ -426,14 +524,27 @@
                 <div id="att-sesi-view" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
                 <div id="att-rekap-view" class="card overflow-x-auto hidden">
                     <table class="w-full text-left min-w-[800px]">
-                        <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b select-none">
+                        <thead
+                            class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b select-none">
                             <tr>
-                                <th class="p-4 cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('pemain')">Pemain <i id="sort-icon-pemain" class="fas fa-sort ml-1 text-gray-300"></i></th>
-                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('hadir')">Hadir <i id="sort-icon-hadir" class="fas fa-sort ml-1 text-gray-300"></i></th>
-                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('izin')">Izin <i id="sort-icon-izin" class="fas fa-sort ml-1 text-gray-300"></i></th>
-                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('sakit')">Sakit <i id="sort-icon-sakit" class="fas fa-sort ml-1 text-gray-300"></i></th>
-                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('alpa')">Alpa <i id="sort-icon-alpa" class="fas fa-sort ml-1 text-gray-300"></i></th>
-                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition" onclick="sortAttRekap('persentase')">Persentase <i id="sort-icon-persentase" class="fas fa-sort-down ml-1 text-gray-600"></i></th>
+                                <th class="p-4 cursor-pointer hover:bg-gray-200 transition"
+                                    onclick="sortAttRekap('pemain')">Pemain <i id="sort-icon-pemain"
+                                        class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition"
+                                    onclick="sortAttRekap('hadir')">Hadir <i id="sort-icon-hadir"
+                                        class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition"
+                                    onclick="sortAttRekap('izin')">Izin <i id="sort-icon-izin"
+                                        class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition"
+                                    onclick="sortAttRekap('sakit')">Sakit <i id="sort-icon-sakit"
+                                        class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition"
+                                    onclick="sortAttRekap('alpa')">Alpa <i id="sort-icon-alpa"
+                                        class="fas fa-sort ml-1 text-gray-300"></i></th>
+                                <th class="p-4 text-center cursor-pointer hover:bg-gray-200 transition"
+                                    onclick="sortAttRekap('persentase')">Persentase <i id="sort-icon-persentase"
+                                        class="fas fa-sort-down ml-1 text-gray-600"></i></th>
                             </tr>
                         </thead>
                         <tbody id="att-rekap-body" class="divide-y text-sm"></tbody>
@@ -510,7 +621,9 @@
                         <table class="w-full text-left min-w-[600px]">
                             <thead class="bg-gray-50 text-[10px] font-extrabold text-gray-400 uppercase border-b">
                                 <tr>
-                                    <th class="p-4">Username</th>
+                                    <th
+                                        class="p-4 sticky left-0 bg-gray-50 z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                        Username</th>
                                     <th class="p-4 text-center">Role</th>
                                     <th class="p-4 text-right">Aksi</th>
                                 </tr>
@@ -558,7 +671,7 @@
 
     <!-- USER MODAL -->
     <div id="user-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl">
+        <div class="bg-white w-full max-w-sm rounded-2xl p-4 md:p-6 shadow-2xl">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="font-bold text-gray-800" id="user-modal-title">Tambah Pengguna</h3>
                 <button onclick="closeUserModal()" class="text-gray-400 hover:text-red-500"><i
@@ -582,9 +695,10 @@
     </div>
 
     <!-- PLAYER MODAL -->
-    <div id="player-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
-            <div class="p-6 border-b flex justify-between items-center bg-gray-50">
+    <div id="player-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-0 md:p-4">
+        <div
+            class="bg-white w-full max-w-xl rounded-none md:rounded-2xl overflow-hidden shadow-2xl flex flex-col h-full md:h-auto max-h-[100vh] md:max-h-[90vh]">
+            <div class="p-4 md:p-6 border-b flex justify-between items-center bg-gray-50">
                 <h3 id="player-modal-title" class="text-lg font-bold text-gray-800">Data Pemain</h3>
                 <button onclick="closePlayerModal()" class="text-gray-400 hover:text-red-500"><i
                         class="fas fa-times"></i></button>
@@ -623,6 +737,26 @@
                             class="w-full p-3 border rounded-xl outline-none border-gray-200 focus:border-blue-500">
                     </div>
                     <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Posisi</label>
+                        <select id="p-posisi"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold focus:border-blue-500">
+                            <option value="KIPER">KIPER</option>
+                            <option value="ANKOR">ANKOR</option>
+                            <option value="FLANK">FLANK</option>
+                            <option value="PIVOT">PIVOT</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Lapis
+                            Pemain</label>
+                        <select id="p-lapis"
+                            class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold focus:border-blue-500">
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Tinggi (cm)</label>
                         <input type="number" id="p-h"
                             class="w-full p-3 border rounded-xl outline-none border-gray-200 focus:border-blue-500">
@@ -659,12 +793,13 @@
 
     <!-- SCHEDULE MODAL -->
     <div id="schedule-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-md rounded-2xl p-6 shadow-2xl">
+        <div class="bg-white w-full max-w-md rounded-2xl p-4 md:p-6 shadow-2xl">
             <h3 class="font-bold text-gray-800 mb-4">Tambah Jadwal Laga</h3>
             <div class="space-y-4">
                 <input type="text" id="sch-opp" placeholder="Nama Lawan"
                     class="w-full p-3 border rounded-xl outline-none font-bold">
-                <input type="text" id="sch-type" placeholder="Jenis Pertandingan" class="w-full p-3 border rounded-xl outline-none font-bold text-gray-700">
+                <input type="text" id="sch-type" placeholder="Jenis Pertandingan"
+                    class="w-full p-3 border rounded-xl outline-none font-bold text-gray-700">
                 <input type="datetime-local" id="sch-date" class="w-full p-3 border rounded-xl outline-none">
                 <div class="flex gap-2">
                     <button onclick="closeScheduleModal()"
@@ -678,14 +813,16 @@
     </div>
 
     <!-- ATTENDANCE MODAL -->
-    <div id="attendance-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-4xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
-            <div class="p-6 bg-gray-50 border-b font-bold flex justify-between items-center text-gray-800">
+    <div id="attendance-modal"
+        class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-0 md:p-4">
+        <div
+            class="bg-white w-full max-w-4xl rounded-none md:rounded-2xl overflow-hidden flex flex-col h-full md:h-auto max-h-[100vh] md:max-h-[90vh] shadow-2xl">
+            <div class="p-4 md:p-6 bg-gray-50 border-b font-bold flex justify-between items-center text-gray-800">
                 <span id="att-modal-title">Sesi Kehadiran Baru</span>
                 <button onclick="closeAttendanceModal()"><i
                         class="fas fa-times text-gray-300 hover:text-red-500"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4">
+            <div class="p-4 md:p-6 overflow-y-auto space-y-4 flex-1">
                 <input type="hidden" id="att-id">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -712,7 +849,8 @@
                     <table class="w-full text-sm text-left">
                         <thead class="bg-gray-100 text-[10px] uppercase font-bold text-gray-500 border-b">
                             <tr>
-                                <th class="p-3">Nama Pemain</th>
+                                <th class="p-3 sticky left-0 bg-gray-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                    Nama Pemain</th>
                                 <th class="p-3 text-center w-24">Hadir</th>
                                 <th class="p-3 text-center w-24">Izin</th>
                                 <th class="p-3 text-center w-24">Sakit</th>
@@ -722,9 +860,18 @@
                         <tbody id="att-players-list" class="divide-y"></tbody>
                     </table>
                 </div>
+                <div class="mt-4 flex justify-end">
+                    <div
+                        class="bg-green-100 px-4 py-2 rounded-xl text-green-700 font-bold text-xs uppercase shadow-sm flex items-center border border-green-200">
+                        TOTAL HADIR: <span id="att-total-hadir" class="text-green-800 font-black text-xl ml-2">0</span>
+                    </div>
+                </div>
                 <div class="mt-4">
-                    <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Catatan / Evaluasi Sesi</label>
-                    <textarea id="att-notes" rows="2" placeholder="Tambahkan catatan, hasil evaluasi, atau keterangan sesi ini..." class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold resize-y text-sm"></textarea>
+                    <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Catatan / Evaluasi
+                        Sesi</label>
+                    <textarea id="att-notes" rows="2"
+                        placeholder="Tambahkan catatan, hasil evaluasi, atau keterangan sesi ini..."
+                        class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold resize-y text-sm"></textarea>
                 </div>
             </div>
             <div class="p-6 border-t bg-gray-50">
@@ -736,15 +883,16 @@
     </div>
 
     <!-- TESTS MODAL -->
-    <div id="test-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
-            <div class="p-6 bg-indigo-600 font-bold flex justify-between items-center text-white">
+    <div id="test-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-0 md:p-4">
+        <div
+            class="bg-white w-full max-w-5xl rounded-none md:rounded-2xl overflow-hidden flex flex-col h-full md:h-auto max-h-[100vh] md:max-h-[90vh] shadow-2xl">
+            <div class="p-4 md:p-6 bg-indigo-600 font-bold flex justify-between items-center text-white">
                 <span id="test-modal-title" class="flex items-center gap-2"><i class="fas fa-flask"></i> Sesi Tes
                     Baru</span>
                 <button onclick="closeTestModal()"><i
                         class="fas fa-times text-indigo-200 hover:text-white"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4">
+            <div class="p-4 md:p-6 overflow-y-auto space-y-4 flex-1">
                 <input type="hidden" id="test-id">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
@@ -790,16 +938,18 @@
     </div>
 
     <!-- RESULT MODAL -->
-    <div id="result-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-4">
-        <div class="bg-white w-full max-w-5xl rounded-2xl overflow-hidden flex flex-col max-h-[90vh] shadow-2xl">
-            <div class="p-6 bg-gray-50 border-b font-bold flex justify-between items-center text-gray-800">
+    <div id="result-modal" class="fixed inset-0 bg-black/50 hidden z-50 flex items-center justify-center p-0 md:p-4">
+        <div
+            class="bg-white w-full max-w-5xl rounded-none md:rounded-2xl overflow-hidden flex flex-col h-full md:h-auto max-h-[100vh] md:max-h-[95vh] shadow-2xl">
+            <div class="p-4 md:p-6 bg-gray-50 border-b font-bold flex justify-between items-center text-gray-800">
                 <span>Input Hasil Laga & Statistik Pemain</span>
                 <button onclick="closeResultModal()"><i
-                        class="fas fa-times text-gray-300 hover:text-red-500"></i></button>
+                        class="fas fa-times text-gray-300 hover:text-red-500 text-xl"></i></button>
             </div>
-            <div class="p-6 overflow-y-auto space-y-4">
+            <div class="p-4 md:p-6 overflow-y-auto space-y-4 flex-1">
                 <input type="hidden" id="result-match-id">
-                <div class="flex justify-center items-center gap-8 bg-blue-50 p-6 rounded-2xl border border-blue-100">
+                <div
+                    class="flex flex-col md:flex-row justify-center items-center gap-4 md:gap-8 bg-blue-50 p-4 md:p-6 rounded-2xl border border-blue-100">
                     <div class="text-center">
                         <p class="text-[10px] font-bold text-blue-500 uppercase mb-1">Skor Tim Kita</p>
                         <div class="font-black text-4xl text-blue-600" id="result-score-us">0</div>
@@ -815,8 +965,11 @@
                     <table class="w-full text-sm">
                         <thead class="bg-gray-100 text-[10px] uppercase font-bold text-gray-500">
                             <tr>
-                                <th class="p-2 text-left">Pemain</th>
+                                <th
+                                    class="p-2 text-left sticky left-0 bg-gray-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
+                                    Pemain</th>
                                 <th class="p-2">Rating</th>
+                                <th class="p-2">Shoot</th>
                                 <th class="p-2">Gol</th>
                                 <th class="p-2">Asis</th>
                                 <th class="p-2">Save</th>
@@ -829,8 +982,11 @@
                     </table>
                 </div>
                 <div class="mt-4">
-                    <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Catatan / Evaluasi Laga</label>
-                    <textarea id="result-notes" rows="2" placeholder="Tambahkan catatan permainan, taktik, atau evaluasi laga..." class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold resize-y text-sm"></textarea>
+                    <label class="block text-[10px] font-extrabold text-gray-400 mb-1 uppercase">Catatan / Evaluasi
+                        Laga</label>
+                    <textarea id="result-notes" rows="2"
+                        placeholder="Tambahkan catatan permainan, taktik, atau evaluasi laga..."
+                        class="w-full p-3 border rounded-xl outline-none border-gray-200 font-bold resize-y text-sm"></textarea>
                 </div>
             </div>
             <div class="p-6 border-t bg-gray-50">
@@ -1017,7 +1173,7 @@
             const currentUser = sessionStorage.getItem('logged_in_user');
             body.innerHTML = appUsers.map(u => `
                 <tr class="border-b hover:bg-gray-50/50">
-                    <td class="p-4 font-bold text-gray-800">${u.username} ${u.username === currentUser ? '<span class="ml-2 text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded-lg uppercase">Aktif</span>' : ''}</td>
+                    <td class="p-4 font-bold text-gray-800 sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">${u.username} ${u.username === currentUser ? '<span class="ml-2 text-[10px] bg-green-100 text-green-600 px-2 py-1 rounded-lg uppercase">Aktif</span>' : ''}</td>
                     <td class="p-4 text-center text-xs font-bold text-gray-500 uppercase">Admin</td>
                     <td class="p-4 text-right">
                         <button onclick="openUserModal('${u.username}')" class="text-blue-500 hover:text-blue-700 mx-2" title="Edit Password"><i class="fas fa-key"></i></button>
@@ -1123,6 +1279,8 @@
                 document.getElementById('p-nickname').value = p.nickname;
                 document.getElementById('p-name').value = p.name;
                 document.getElementById('p-birthdate').value = p.birthdate;
+                document.getElementById('p-posisi').value = p.posisi || "KIPER";
+                document.getElementById('p-lapis').value = p.lapis || "1";
                 document.getElementById('p-h').value = p.h;
                 document.getElementById('p-w').value = p.w;
                 document.getElementById('p-photo-preview').src = p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`;
@@ -1152,6 +1310,8 @@
                 document.getElementById('p-nickname').value = "";
                 document.getElementById('p-name').value = "";
                 document.getElementById('p-birthdate').value = "";
+                document.getElementById('p-posisi').value = "KIPER";
+                document.getElementById('p-lapis').value = "1";
                 document.getElementById('p-h').value = "";
                 document.getElementById('p-w').value = "";
                 document.getElementById('p-photo-preview').src = "https://ui-avatars.com/api/?name=P&background=2563eb&color=fff";
@@ -1165,8 +1325,20 @@
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    tempPlayerPhoto = e.target.result;
-                    document.getElementById('p-photo-preview').src = tempPlayerPhoto;
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX = 200;
+                        let w = img.width, h = img.height;
+                        if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+                        else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                        canvas.width = w; canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        tempPlayerPhoto = canvas.toDataURL('image/jpeg', 0.8);
+                        document.getElementById('p-photo-preview').src = tempPlayerPhoto;
+                    };
+                    img.src = e.target.result;
                 };
                 reader.readAsDataURL(input.files[0]);
             }
@@ -1182,6 +1354,8 @@
                 nickname,
                 name: document.getElementById('p-name').value,
                 birthdate: document.getElementById('p-birthdate').value,
+                posisi: document.getElementById('p-posisi').value,
+                lapis: document.getElementById('p-lapis').value,
                 h: document.getElementById('p-h').value,
                 w: document.getElementById('p-w').value,
                 photo: tempPlayerPhoto || (id ? players.find(x => x.id == id).photo : null),
@@ -1240,7 +1414,7 @@
                                 speed: (cols[8] || 'C').trim().toUpperCase(),
                                 power: (cols[9] || 'C').trim().toUpperCase()
                             },
-                            stats: { goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0, mvpCount: 0, avgRating: "0.0" }
+                            stats: { shoots: 0, goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0, mvpCount: 0, avgRating: "0.0" }
                         });
                         count++;
                     }
@@ -1254,7 +1428,7 @@
 
         // STATS LOGIC
         function recalculatePlayerStats() {
-            players.forEach(p => p.stats = { goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, avgRating: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0, mvpCount: 0 });
+            players.forEach(p => p.stats = { shoots: 0, goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, avgRating: 0, matchesPlayed: 0, wins: 0, draws: 0, losses: 0, mvpCount: 0 });
             const completed = matches.filter(m => m.status === 'completed');
 
             completed.forEach(m => {
@@ -1269,6 +1443,7 @@
                 m.participation.forEach(part => {
                     const p = players.find(x => x.id === part.pid);
                     if (p && part.isPlaying) {
+                        p.stats.shoots += (parseInt(part.shoots) || 0);
                         p.stats.goals += (parseInt(part.goals) || 0);
                         p.stats.assists += (parseInt(part.assists) || 0);
                         p.stats.saves += (parseInt(part.saves) || 0);
@@ -1293,7 +1468,23 @@
         // RENDERING
         function renderPlayers() {
             const body = document.getElementById('player-list-body');
-            body.innerHTML = players.map(p => {
+
+            const positionOrder = { 'KIPER': 1, 'ANKOR': 2, 'FLANK': 3, 'PIVOT': 4 };
+            let sortedPlayers = [...players].sort((a, b) => {
+                let posA = positionOrder[a.posisi || ''] || 99;
+                let posB = positionOrder[b.posisi || ''] || 99;
+                if (posA !== posB) return posA - posB;
+
+                let lapisA = parseInt(a.lapis || 99);
+                let lapisB = parseInt(b.lapis || 99);
+                if (lapisA !== lapisB) return lapisA - lapisB;
+
+                let nameA = (a.nickname || '').toLowerCase();
+                let nameB = (b.nickname || '').toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+
+            body.innerHTML = sortedPlayers.map(p => {
                 const age = calculateAge(p.birthdate);
                 const avgs = getPlayerTestAvg(p.id);
                 let gradeBadges = '';
@@ -1320,6 +1511,8 @@
                         </div>
                     </td>
                     <td class="p-4 font-bold text-gray-600">${age} thn</td>
+                    <td class="p-4 text-center text-xs font-bold text-indigo-600">${p.posisi || '-'}</td>
+                    <td class="p-4 text-center text-xs font-bold text-teal-600">${p.lapis || '-'}</td>
                     <td class="p-4 text-center text-xs font-bold text-gray-500">${p.h || '-'}cm / ${p.w || '-'}kg</td>
                     <td class="p-4">
                         <div class="flex flex-wrap justify-center gap-1">${gradeBadges}</div>
@@ -1351,6 +1544,7 @@
                     </td>
                     <td class="p-4 text-center">${p.stats.matchesPlayed}</td>
                     <td class="p-4 text-center font-black text-yellow-600 bg-yellow-50">${p.stats.mvpCount}</td>
+                    <td class="p-4 text-center font-bold">${p.stats.shoots || 0}</td>
                     <td class="p-4 text-center font-bold">${p.stats.goals}</td>
                     <td class="p-4 text-center font-bold">${p.stats.assists}</td>
                     <td class="p-4 text-center font-bold">${p.stats.saves}</td>
@@ -1410,6 +1604,35 @@
             renderLeader('save-list', 'saves');
 
             renderChart(completed.slice(-10));
+
+            // Dashboard Calendar
+            const calEl = document.getElementById('dashboard-calendar');
+            if (calEl) {
+                const now = Date.now();
+                const sortedByDistance = [...matches].sort((a, b) => Math.abs(new Date(a.date).getTime() - now) - Math.abs(new Date(b.date).getTime() - now));
+                const closestFive = sortedByDistance.slice(0, 5).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+                if (closestFive.length === 0) {
+                    calEl.innerHTML = '<div class="w-full flex items-center justify-center p-8 text-gray-400 font-bold uppercase tracking-widest text-xs">Belum ada jadwal pertandingan terdekat</div>';
+                } else {
+                    calEl.innerHTML = closestFive.map(m => {
+                        const isPast = m.status === 'completed';
+                        const scoreStr = isPast ? `<div class="mt-2 text-center bg-gray-100 rounded-lg py-1 font-black text-gray-800">${m.scoreUs} - ${m.scoreThem}</div>` : '';
+                        const bgClass = isPast ? 'from-gray-50 to-gray-100 border-gray-200 opacity-80' : 'from-blue-50 to-white border-blue-100';
+                        const badgeClass = isPast ? 'bg-gray-500' : 'bg-blue-600';
+                        return `
+                        <div class="min-w-[250px] bg-gradient-to-br ${bgClass} border p-4 rounded-2xl shadow-sm hover:shadow-md transition">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="${badgeClass} text-white text-[10px] px-2 py-1 rounded-lg font-bold uppercase">${m.type || 'Laga'}</span>
+                                <span class="text-xs font-bold text-gray-500"><i class="far fa-calendar-alt mr-1"></i> ${new Date(m.date).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
+                            </div>
+                            <h4 class="font-black text-gray-800 text-lg truncate" title="VS ${m.opponent}">VS ${m.opponent}</h4>
+                            <p class="text-xs text-gray-400 font-semibold mt-1"><i class="far fa-clock mr-1"></i> ${new Date(m.date).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</p>
+                            ${scoreStr}
+                        </div>`;
+                    }).join('');
+                }
+            }
         }
 
         function renderChart(lastMatches) {
@@ -1447,7 +1670,7 @@
                 status: 'upcoming',
                 scoreUs: 0,
                 scoreThem: 0,
-                participation: players.map(p => ({ pid: p.id, goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, rating: 5, isPlaying: false }))
+                participation: players.map(p => ({ pid: p.id, shoots: 0, goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, rating: 5, isPlaying: false }))
             });
             saveData();
             closeScheduleModal();
@@ -1556,7 +1779,7 @@
 
         function renderAttendanceRecap() {
             const body = document.getElementById('att-rekap-body');
-            
+
             // Calculate data first
             let recapData = players.map(p => {
                 let hadir = 0, izin = 0, sakit = 0, alpa = 0;
@@ -1578,7 +1801,7 @@
             recapData.sort((a, b) => {
                 let valA = a[attRekapSortCol];
                 let valB = b[attRekapSortCol];
-                
+
                 if (attRekapSortCol === 'pemain') {
                     valA = a.nickname.toLowerCase();
                     valB = b.nickname.toLowerCase();
@@ -1608,14 +1831,14 @@
                     </td>
                 </tr>`;
             }).join('');
-            
+
             // Update icons
             const cols = ['pemain', 'hadir', 'izin', 'sakit', 'alpa', 'persentase'];
             cols.forEach(col => {
                 const icon = document.getElementById('sort-icon-' + col);
                 if (icon) {
-                    icon.className = 'fas ml-1 transition ' + (col === attRekapSortCol 
-                        ? (attRekapSortDir === 'asc' ? 'fa-sort-up text-gray-800' : 'fa-sort-down text-gray-800') 
+                    icon.className = 'fas ml-1 transition ' + (col === attRekapSortCol
+                        ? (attRekapSortDir === 'asc' ? 'fa-sort-up text-gray-800' : 'fa-sort-down text-gray-800')
                         : 'fa-sort text-gray-300');
                 }
             });
@@ -1664,18 +1887,26 @@
                 const s = rec ? rec.status : 'Alpa';
                 return `
                 <tr class="hover:bg-gray-50 transition border-b">
-                    <td class="p-3 font-bold text-gray-800 text-xs uppercase truncate max-w-[120px]">${p.nickname}</td>
+                    <td class="p-3 font-bold text-gray-800 text-xs uppercase truncate max-w-[120px] sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">${p.nickname}</td>
                     <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Hadir" ${s === 'Hadir' ? 'checked' : ''} onchange="updateAttStatus(${p.id}, 'Hadir')" class="w-4 h-4 text-green-600 accent-green-600"></td>
                     <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Izin" ${s === 'Izin' ? 'checked' : ''} onchange="updateAttStatus(${p.id}, 'Izin')" class="w-4 h-4 text-yellow-500 accent-yellow-500"></td>
                     <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Sakit" ${s === 'Sakit' ? 'checked' : ''} onchange="updateAttStatus(${p.id}, 'Sakit')" class="w-4 h-4 text-orange-500 accent-orange-500"></td>
                     <td class="p-3 text-center"><input type="radio" name="att_p_${p.id}" value="Alpa" ${s === 'Alpa' ? 'checked' : ''} onchange="updateAttStatus(${p.id}, 'Alpa')" class="w-4 h-4 text-red-600 accent-red-600"></td>
                 </tr>`;
             }).join('');
+            updateTotalHadir();
+        }
+
+        function updateTotalHadir() {
+            const total = currentAttSession.filter(r => r.status === 'Hadir').length;
+            const el = document.getElementById('att-total-hadir');
+            if (el) el.innerText = total;
         }
 
         function updateAttStatus(pid, status) {
             const rec = currentAttSession.find(r => r.pid === pid);
             if (rec) rec.status = status;
+            updateTotalHadir();
         }
 
         function closeAttendanceModal() { document.getElementById('attendance-modal').classList.add('hidden'); }
@@ -1731,16 +1962,17 @@
         function renderResultPlayers(match) {
             const listEl = document.getElementById('result-players-list');
             listEl.innerHTML = players.map(p => {
-                const part = match.participation.find(x => x.pid === p.id) || { goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, rating: 5, isPlaying: false };
+                const part = match.participation.find(x => x.pid === p.id) || { shoots: 0, goals: 0, assists: 0, saves: 0, yellowCards: 0, redCards: 0, rating: 5, isPlaying: false };
                 return `
                 <tr class="border-b ${part.isPlaying ? 'bg-blue-50/50' : 'bg-white opacity-60'}">
-                    <td class="p-2">
+                    <td class="p-2 sticky left-0 ${part.isPlaying ? 'bg-[#f4f7fe]' : 'bg-white'} z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                         <div class="flex items-center gap-2">
                             <input type="checkbox" ${part.isPlaying ? 'checked' : ''} onchange="updatePart(${p.id}, 'isPlaying', this.checked)" class="w-4 h-4 rounded">
                             <span class="font-bold text-xs uppercase">${p.nickname}</span>
                         </div>
                     </td>
                     <td class="p-2"><input type="number" step="0.1" value="${part.rating}" onchange="updatePart(${p.id}, 'rating', this.value)" class="w-12 p-1 border rounded text-xs text-center font-bold"></td>
+                    <td class="p-2"><input type="number" value="${part.shoots || 0}" onchange="updatePart(${p.id}, 'shoots', this.value)" class="w-10 p-1 border rounded text-xs text-center"></td>
                     <td class="p-2"><input type="number" value="${part.goals}" onchange="updatePart(${p.id}, 'goals', this.value); updateMatchScore()" class="w-10 p-1 border rounded text-xs text-center"></td>
                     <td class="p-2"><input type="number" value="${part.assists}" onchange="updatePart(${p.id}, 'assists', this.value)" class="w-10 p-1 border rounded text-xs text-center"></td>
                     <td class="p-2"><input type="number" value="${part.saves}" onchange="updatePart(${p.id}, 'saves', this.value)" class="w-10 p-1 border rounded text-xs text-center"></td>
@@ -1968,7 +2200,7 @@
             const physLabels = ['Endurance', 'Strength', 'Agility', 'Speed', 'Power'];
             const techLabels = ['Dribbling', 'Passing', 'Shooting', 'Ball Ctrl'];
 
-            let headerHTML = '<th class="p-3 text-left min-w-[120px]">Nama Pemain</th>';
+            let headerHTML = '<th class="p-3 text-left min-w-[120px] sticky left-0 bg-gray-100 z-20 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Nama Pemain</th>';
             if (showFisik) physLabels.forEach(l => { headerHTML += `<th class="p-3 text-center w-24 bg-indigo-100/50 text-indigo-700">${l}</th>`; });
             if (showTeknik) techLabels.forEach(l => { headerHTML += `<th class="p-3 text-center w-24 bg-violet-100/50 text-violet-700">${l}</th>`; });
             document.getElementById('test-header-row').innerHTML = headerHTML;
@@ -1977,7 +2209,7 @@
             tbody.innerHTML = players.map(p => {
                 const rec = currentTestSession[p.id] || { pid: p.id };
                 let rowHTML = `<tr class="hover:bg-gray-50 transition border-b">
-                    <td class="p-3 font-bold text-gray-800 text-xs uppercase">
+                    <td class="p-3 font-bold text-gray-800 text-xs uppercase sticky left-0 bg-white z-10 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                         <div class="flex items-center gap-2">
                             <img src="${p.photo || `https://ui-avatars.com/api/?name=${p.nickname}&background=2563eb&color=fff`}" class="w-7 h-7 rounded-full object-cover">
                             ${p.nickname}
@@ -2069,7 +2301,7 @@
 
         function downloadAttendanceCSV() {
             let csvContent = "Nama Pemain,Hadir,Izin,Sakit,Alpa,Persentase\n";
-            
+
             let recapData = players.map(p => {
                 let hadir = 0, izin = 0, sakit = 0, alpa = 0;
                 attendances.forEach(att => {
